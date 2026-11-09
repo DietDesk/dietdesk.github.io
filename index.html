@@ -2689,7 +2689,7 @@ function restore(j){
 
 /* ═════════ impostazioni: elenco di sottosezioni ═════════ */
 /* collegamento al modulo Google per feedback e assistenza (si compila dal link precompilato) */
-const FB={url:"",tipo:"",msg:"",email:"",ver:"",dev:""};
+const FB={url:"https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse",tipo:"entry.2125067543",msg:"entry.850017229",email:"entry.1367240956",ver:"entry.357838585",dev:"entry.1531641997"};
 const FB_TIPI=["Segnalazione di un problema","Suggerimento di una nuova funzione","Richiesta di assistenza","Altro"];
 function openSec(k){if(!state.sec)history.pushState({sec:1},"");state.sec=k;render();$("#view").scrollTop=0;enterAnim()}
 const fmtWhen=t=>{if(!t)return"mai";const d=new Date(t),td=new Date();const same=d.toDateString()===td.toDateString();return same?`oggi alle ${pad(d.getHours())}:${pad(d.getMinutes())}`:d.toLocaleDateString("it-IT")};
@@ -3075,7 +3075,7 @@ async function nativeOpen(url){try{const r=await window.Capacitor.Plugins.Filesy
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="0.20.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="0.20.1"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
