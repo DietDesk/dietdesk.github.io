@@ -302,9 +302,8 @@ main{touch-action:pan-y}
 .ghost{position:fixed;z-index:19;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;pointer-events:none;box-shadow:0 0 28px rgba(0,0,0,.22)}
 .ghost main{flex:none}
 @media (pointer:coarse){.sheet .sheetx{display:none}}
-.movebar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:18;background:#9A5B12;color:#fff;border-radius:14px;padding:10px 12px;font-size:14px;line-height:1.4;display:flex;gap:8px;align-items:flex-start;box-shadow:0 6px 24px rgba(0,0,0,.25)}
-.movebar a{color:#fff;font-weight:700}.movebar button{background:none;border:0;color:#fff;font-size:16px;padding:2px 6px;cursor:pointer}
-@media (min-width:900px){.movebar{left:auto;width:420px;bottom:20px}}
+.row .chev{font-size:22px;color:var(--ink-3);padding-left:8px}
+.menu button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:-2px}
 .sheet{position:relative;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .sheet>.menu,.sheet>.field,.sheet>.actions,.sheet>h2,.sheet>p{flex:none}
 .grabzone{flex:none;height:36px;margin:-8px -16px -4px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab}
@@ -375,7 +374,7 @@ main{touch-action:pan-y}
     <button data-tab="stime"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 6.5h7M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5v3M8.5 18h.01M12 18h.01"/></svg>Stima</button>
     <button data-tab="alimenti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4 0-7-3-7-8 0-4 3-6 5-6 1 0 1.5.5 2 .5s1-.5 2-.5c2 0 5 2 5 6 0 5-3 8-7 8z"/><path d="M12 7c0-2 1-4 3-4"/></svg>Alimenti</button>
     <button data-tab="modelli"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Modelli</button>
-    <button data-tab="dati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>Dati</button>
+    <button data-tab="dati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Impostazioni</button>
   </nav>
 </div>
 <input type="file" id="filein" hidden>
@@ -736,7 +735,7 @@ applyTheme();
 const $=s=>document.querySelector(s);
 const WIDE_MQ=matchMedia("(min-width:900px), (orientation:landscape) and (max-height:540px) and (min-width:640px)");const wide=()=>WIDE_MQ.matches;
 const setBar=h=>{$("#bar").innerHTML=h};
-document.getElementById("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;const was=!!(state.paz||state.stima);if(state.paz)releasePaz(state.paz);state.paz=null;state.stima=null;state.tab=b.dataset.tab;if(was)history.back();else render()});
+document.getElementById("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;const was=!!(state.paz||state.stima||state.sec);if(state.paz)releasePaz(state.paz);state.paz=null;state.stima=null;state.sec=null;state.tab=b.dataset.tab;if(was)history.back();else render()});
 function render(){
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-current",String(b.dataset.tab===state.tab&&!state.paz)));
   $("#tabs").hidden=!!(state.paz||state.stima)&&!wide();
@@ -1801,7 +1800,7 @@ function enterAnim(){slideIn([$("#bar"),$("#view")],1)}
   document.addEventListener("pointerdown",e=>{
     const W0=innerWidth;if(e.clientX<28)lastEdge={side:"l",t:Date.now()};else if(e.clientX>W0-28)lastEdge={side:"r",t:Date.now()};
     G=null;if(e.pointerType==="mouse"||!e.isPrimary||!view.contains(e.target)||document.querySelector(".scrim,.dpk,.ghost"))return;
-    const t=e.target,inner=state.paz||state.stima;
+    const t=e.target,inner=state.paz||state.stima||state.sec;
     let mode=null,els=[];
     if(inner&&(e.clientX<28||e.clientX>W0-28)){mode="edge";els=[$("#bar"),view]}
     else if(t.closest("input,textarea,select,.dinp")||hScroll(t))return;
@@ -2688,6 +2687,83 @@ function restore(j){
     render();toast("Backup ripristinato")});
 }
 
+/* ═════════ impostazioni: elenco di sottosezioni ═════════ */
+/* collegamento al modulo Google per feedback e assistenza (si compila dal link precompilato) */
+const FB={url:"",tipo:"",msg:"",email:"",ver:"",dev:""};
+const FB_TIPI=["Segnalazione di un problema","Suggerimento di una nuova funzione","Richiesta di assistenza","Altro"];
+function openSec(k){if(!state.sec)history.pushState({sec:1},"");state.sec=k;render();$("#view").scrollTop=0;enterAnim()}
+const fmtWhen=t=>{if(!t)return"mai";const d=new Date(t),td=new Date();const same=d.toDateString()===td.toDateString();return same?`oggi alle ${pad(d.getHours())}:${pad(d.getMinutes())}`:d.toLocaleDateString("it-IT")};
+function secList(){const o=state.kv.opt,L=[];
+  if(isNative())L.push(["agg","Aggiornamenti",updNew()?`Disponibile la ${UPD.latest.version}`:`Versione ${APP_VER}`]);
+  L.push(["sync","Sincronizzazione",syncOn()?syncLabel():"Non collegata · Google Drive"]);
+  L.push(["backup","Backup",isNative()?(abkOn()?(o.lastAutoBk?`Automatico · ultimo ${fmtWhen(o.lastAutoBk)}`:"Automatico · nessun backup ancora"):"Automatico disattivato"):(o.lastBk?`Ultimo backup ${fmtWhen(o.lastBk)}`:"Nessun backup fatto da qui")]);
+  L.push(["imp","Importa file","Excel, Progetto Dieta (.ppd e .cpd), file .ndiet"]);
+  L.push(["asp","Aspetto","Tema chiaro o scuro, colore principale"]);
+  L.push(["arch","Archivio",`${state.pazienti.length} pazienti · ${FOODS.length} alimenti`]);
+  L.push(["fb","Feedback e assistenza","Segnala un problema, suggerisci una funzione, chiedi aiuto"]);
+  L.push(["info","Informazioni e privacy",`DietDesk ${APP_VER}`]);
+  return L}
+const SEC_T=Object.fromEntries([["agg","Aggiornamenti"],["sync","Sincronizzazione"],["backup","Backup"],["imp","Importa file"],["asp","Aspetto"],["arch","Archivio"],["fb","Feedback e assistenza"],["info","Informazioni e privacy"]]);
+function viewDati(){
+  const k=state.sec;
+  if(!k){setBar(`<h1>Impostazioni</h1>`);
+    $("#view").innerHTML=W(`<div class="list" id="seclist">${secList().map(([id,t,s])=>`<button class="row" data-sec="${id}"><span class="main"><span class="t">${esc(t)}</span><span class="s">${esc(s)}</span></span><span class="chev" aria-hidden="true">›</span></button>`).join("")}</div>`);
+    $("#seclist").onclick=e=>{const b=e.target.closest("[data-sec]");if(b)openSec(b.dataset.sec)};
+    if(isNative()&&!UPD.done&&!UPD._busy){UPD._busy=1;updCheck(false).finally(()=>{UPD._busy=0})}
+    return}
+  setBar(`<button class="iconbtn" id="bk" aria-label="Indietro">${I.back}</button><h1>${esc(SEC_T[k]||"Impostazioni")}</h1>`);
+  $("#bk").onclick=()=>history.back();
+  const nU=state.userFoods.length;let h="";
+  if(k==="agg")h=updCard()||`<div class="card"><p>DietDesk ${APP_VER}. Sul web e su iPhone l'app si aggiorna da sola.</p></div>`;
+  if(k==="sync")h=syncCard();
+  if(k==="backup")h=`${abkCard()}<div class="card"><h3>Backup completo</h3><p>Un solo file con pazienti, visite, alimenti, ricette, preset, giornate tipo, pasti e porzioni salvate. Serve anche per passare i dati tra dispositivi.</p>
+     <div class="actions"><button class="btn" id="bkf">Crea backup</button><button class="btn" id="rs">Ripristina</button></div></div>`;
+  if(k==="imp")h=`<div class="card"><h3>Importa file</h3><p>Excel della scheda paziente (.xlsx), diete di Progetto Dieta (.ppd), file DietDesk (.ndiet), alimenti personali (.cpd). ${window.Capacitor?"Puoi anche aprire un file direttamente con DietDesk dal file manager o da un allegato.":"Puoi anche trascinare i file su questa finestra."}</p><button class="btn primary" style="width:100%" id="imp">Scegli file</button></div>`;
+  if(k==="asp")h=`<div class="card"><h3>Tema</h3>
+     <div class="seg" id="thm" style="margin:6px 0 12px">${[["system","Come il sistema"],["light","Chiaro"],["dark","Scuro"]].map(([m,l])=>`<button data-tm="${m}" aria-pressed="${getTheme().mode===m}">${l}</button>`).join("")}</div>
+     <div class="label" style="margin-bottom:6px">Colore principale</div>
+     <div class="swatches">${Object.entries(ACCENTS).map(([c,a])=>`<button class="sw" data-tc="${c}" aria-pressed="${getTheme().color===c}" aria-label="${a[0]}" title="${a[0]}"><i style="background:linear-gradient(135deg,${a[1]} 50%,${a[3]} 50%)"></i><span>${a[0]}</span></button>`).join("")}</div></div>`;
+  if(k==="arch")h=`<div class="card"><h3>Archivio</h3><p class="num">${state.pazienti.length} pazienti · ${FOODS.length} alimenti (${DB.foods.filter(f=>f.o==="s").length} CREA/INRAN, ${DB.foods.filter(f=>f.o==="p").length} personali, ${DB.foods.filter(f=>f.c==="18").length} SNO, ${FOODS.filter(f=>f.o==="r").length} ricette${nU?`, ${nU} aggiunti su questo dispositivo`:""}) · ${(state.kv.presets||[]).length} preset · ${(state.kv.modelli||[]).length} giornate tipo · ${(state.kv.stime||[]).length} stime</p>
+     <p style="margin:0">I dati restano su questo dispositivo${syncOn()?" e, cifrati, sul tuo Google Drive":""}.${state.persist?"":" <b class=\"over\">Archivio non disponibile in questa sessione.</b>"}</p></div>
+     <div class="note">Valori nutrizionali per 100g di parte edibile. Fonte principale: tabelle CREA (alimentinutrizione.it); SNO: schede tecniche dei produttori.</div>`;
+  if(k==="fb")h=fbCard();
+  if(k==="info")h=`<div class="card"><h3>DietDesk ${APP_VER}</h3><p>Piani dietetici per dietisti e nutrizionisti: pazienti, diete con alternative, prescrizioni, visite, diario alimentare, stima degli apporti e confronto con i LARN.</p>
+     <div class="actions" style="flex-wrap:wrap"><a class="btn" href="https://dietdesk.github.io/info.html" target="_blank" rel="noopener">Sito</a><a class="btn" href="https://dietdesk.github.io/privacy.html" target="_blank" rel="noopener">Informativa privacy</a></div></div>
+     <div class="card"><h3>I tuoi dati</h3><p style="margin:0">DietDesk non ha un server e non raccoglie dati: tutto resta sul dispositivo. Con la sincronizzazione una copia cifrata va nel <b>tuo</b> Google Drive. Il modulo di feedback invia solo quello che scrivi tu, più versione dell'app e tipo di dispositivo.</p></div>`;
+  $("#view").innerHTML=W(h);
+  if(k==="agg")updBind();if(k==="backup"){abkBind();$("#bkf").onclick=backup;$("#rs").onclick=()=>pickFile(".json")}
+  if(k==="imp")$("#imp").onclick=()=>pickFile(".xlsx,.xls,.ppd,.ndiet,.json,.cpd");
+  if(k==="asp"){$("#view").querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{setTheme({...getTheme(),mode:b.dataset.tm});rerender()});
+    $("#view").querySelectorAll("[data-tc]").forEach(b=>b.onclick=()=>{setTheme({...getTheme(),color:b.dataset.tc});rerender()})}
+  if(k==="sync"){const sb=$("#syset");if(sb)sb.onclick=syncSetup;const sn=$("#synow");if(sn)sn.onclick=()=>{toast("Sincronizzazione…");syncNow().then(()=>{rerender();toast(SY.status==="err"?"Sincronizzazione non riuscita: "+SY.err:"Sincronizzato")})};
+    const so=$("#syoff");if(so)so.onclick=syncDisconnect;const gr=$("#gdre");if(gr)gr.onclick=gdReconnect}
+  if(k==="fb")fbBind();
+}
+/* ─── feedback e assistenza (modulo Google) ─── */
+const fbDev=()=>{const u=navigator.userAgent,os=/Android/i.test(u)?"Android":/iPhone|iPad/i.test(u)?"iOS":/Windows/i.test(u)?"Windows":/Mac/i.test(u)?"macOS":"altro";
+  const m=u.match(/Android [\d.]+|OS [\d_]+|Windows NT [\d.]+/);return `${os}${m?" ("+m[0].replace(/_/g,".")+")":""} · ${isNative()?"app Android":matchMedia("(display-mode: standalone)").matches?"app installata":"browser"}`};
+function fbDraft(){try{return JSON.parse(localStorage.getItem("dd_fb")||"{}")}catch(e){return{}}}
+function fbCard(){const d=fbDraft();
+  if(!FB.url)return `<div class="card"><h3>Feedback e assistenza</h3><p style="margin:0">Questa funzione sarà attiva a breve.</p></div>`;
+  return `<div class="card"><form id="fbf"><h3>Scrivici</h3>
+    <div class="menu" id="fbt" style="margin:0 0 10px">${FB_TIPI.map((t,i)=>`<button type="button" data-t="${i}" aria-pressed="${(d.t||0)===i}">${t}</button>`).join("")}</div>
+    <div class="field"><label for="fbm">Messaggio</label><textarea id="fbm" rows="6" placeholder="Descrivi il problema o l'idea. Per un problema: cosa stavi facendo, cosa ti aspettavi e cosa è successo.">${esc(d.m||"")}</textarea></div>
+    <div class="field"><label for="fbe">Email per la risposta (facoltativa)</label><input id="fbe" type="email" autocomplete="email" value="${esc(d.e||"")}"></div>
+    <label class="pd-o" style="margin:0 0 10px"><input type="checkbox" id="fbv" ${d.v===false?"":"checked"}> Includi versione dell'app e tipo di dispositivo (${esc(fbDev())})</label>
+    <p class="note" style="margin-top:0"><b>Non inserire dati dei pazienti</b> (nomi, date di nascita, informazioni cliniche).</p>
+    <div class="actions"><button class="btn primary" id="fbs">Invia</button></div></form></div>`}
+function fbBind(){const f=$("#fbf");if(!f)return;let t=fbDraft().t||0;
+  const save=()=>{try{localStorage.setItem("dd_fb",JSON.stringify({t,m:$("#fbm").value,e:$("#fbe").value,v:$("#fbv").checked}))}catch(e){}};
+  $("#fbt").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;t=+b.dataset.t;$("#fbt").querySelectorAll("[data-t]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));save()};
+  ["#fbm","#fbe","#fbv"].forEach(id=>$(id).addEventListener("input",save));$("#fbv").addEventListener("change",save);
+  f.onsubmit=async e=>{e.preventDefault();const m=$("#fbm").value.trim(),em=$("#fbe").value.trim(),inc=$("#fbv").checked;
+    if(m.length<5)return toast("Scrivi il messaggio");if(em&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return toast("Email non valida");
+    const b=$("#fbs");b.disabled=true;b.textContent="Invio…";
+    const body=new URLSearchParams();body.append(FB.tipo,FB_TIPI[t]);body.append(FB.msg,m.slice(0,8000));if(em)body.append(FB.email,em);if(inc){body.append(FB.ver,APP_VER);body.append(FB.dev,fbDev())}
+    try{await fetch(FB.url,{method:"POST",mode:"no-cors",body});try{localStorage.removeItem("dd_fb")}catch(x){}
+      $("#view").innerHTML=W(`<div class="card"><h3>Grazie!</h3><p style="margin:0">Messaggio inviato.${em?" Ti risponderemo all'indirizzo che hai indicato.":""}</p></div>`)}
+    catch(x){b.disabled=false;b.textContent="Invia";toast("Non inviato: controlla la connessione e riprova. Il testo resta salvato.")}}}
+
 /* ═════════ sincronizzazione cloud (Supabase, cifrata sul dispositivo) ═════════ */
 const SEP="\u0001";
 const SY={cfg:null,key:null,dirty:new Map(),ver:{},dt:{},status:"off",err:"",last:null,busy:null,pushT:null,gen:0};
@@ -2891,7 +2967,7 @@ function syncSetup(){
   if(!gdAvailable())return sheet(`<h2>Sincronizzazione con Google Drive</h2><div class="scroll">
     <p>Questa versione di DietDesk è aperta da un file sul computer: Google non consente l'accesso da un file locale.</p>
     <p>Per sincronizzare il PC usa la <b>versione dal sito</b>, installata come app: si aggiorna da sola e funziona anche senza connessione.</p>
-    <ol style="padding-left:20px;margin:8px 0"><li>Qui: <b>Dati → Crea backup</b>.</li><li>Apri <b>dietdesk.github.io</b> in Edge → menu ⋯ → <b>App → Installa DietDesk</b>.</li><li>Nell'app installata: <b>Dati → Ripristina</b> e scegli il backup.</li><li>Sempre lì: <b>Dati → Sincronizzazione → Collega Google Drive</b>.</li></ol></div>
+    <ol style="padding-left:20px;margin:8px 0"><li>Qui: <b>Impostazioni → Backup → Crea backup</b>.</li><li>Apri <b>dietdesk.github.io</b> in Edge → menu ⋯ → <b>App → Installa DietDesk</b>.</li><li>Nell'app installata: <b>Impostazioni → Backup → Ripristina</b> e scegli il backup.</li><li>Sempre lì: <b>Impostazioni → Sincronizzazione → Collega Google Drive</b>.</li></ol></div>
     <div class="actions" style="margin-top:10px"><button class="btn" data-close>Chiudi</button><a class="btn primary" href="https://dietdesk.github.io/" target="_blank" rel="noopener">Apri la versione dal sito</a></div>`);
   const d=/Android|iPhone|iPad/i.test(navigator.userAgent)?"Telefono":"PC";
   let found=null,step=0;if(!gdNative())gdLoadGis().catch(()=>{});
@@ -2977,7 +3053,7 @@ function sheetDragEnd(sh,dy,v){
   const end=e=>{if(!T)return;const t=T;T=null;if(!t.on)return;const p=e.changedTouches&&e.changedTouches[0],dy=p?Math.max(0,p.clientY-t.y0):0;
     if(e.type==="touchcancel")return sheetDragEnd(t.sh,0,0);sheetDragEnd(t.sh,dy,dy/Math.max(1,Date.now()-t.t))};
   document.addEventListener("touchend",end);document.addEventListener("touchcancel",end)})();
-window.addEventListener("popstate",()=>{if(document.querySelector(".scrim")){closeSheet();if(state.paz||state.stima)history.pushState({paz:1},"");return}if(state.paz||state.stima){const fin=leaveAnim();if(state.paz){const old=state.paz;state.paz=null;releasePaz(old)}state.stima=null;render();fin()}else render()});
+window.addEventListener("popstate",()=>{if(document.querySelector(".scrim")){closeSheet();if(state.paz||state.stima||state.sec)history.pushState({paz:1},"");return}if(state.paz||state.stima||state.sec){const fin=leaveAnim();if(state.paz){const old=state.paz;state.paz=null;releasePaz(old)}state.stima=null;state.sec=null;render();fin()}else render()});
 window.addEventListener("resize",()=>{$("#tabs").hidden=!!(state.paz||state.stima)&&!wide()});
 WIDE_MQ.addEventListener&&WIDE_MQ.addEventListener("change",()=>rerender());
 
@@ -2992,14 +3068,14 @@ addEventListener("drop",e=>{if(!e.dataTransfer||!e.dataTransfer.files.length)ret
 async function nativeOpen(url){try{const r=await window.Capacitor.Plugins.Filesystem.readFile({path:url});const bin=Uint8Array.from(atob(r.data),c=>c.charCodeAt(0));
   const name=decodeURIComponent(url).split(/[\/:]/).pop()||"file";await handleFile(new File([bin],name))}catch(e){toast("Impossibile aprire il file: "+(e&&e.message||e))}}
 (function(){const C=window.Capacitor;if(!(C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins.App))return;
-  C.Plugins.App.addListener("backButton",()=>{if(closeTopSheet())return;if(state.paz||state.stima){history.back();return}
+  C.Plugins.App.addListener("backButton",()=>{if(closeTopSheet())return;if(state.paz||state.stima||state.sec){history.back();return}
     if(state.tab!=="pazienti"){state.tab="pazienti";render();return}C.Plugins.App.minimizeApp?C.Plugins.App.minimizeApp():C.Plugins.App.exitApp()});
   C.Plugins.App.addListener("appUrlOpen",e=>{if(e&&e.url)nativeOpen(e.url)});
   C.Plugins.App.getLaunchUrl().then(r=>{if(r&&r.url)setTimeout(()=>nativeOpen(r.url),800)}).catch(()=>{})})();
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="0.19.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="0.20.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
@@ -3012,7 +3088,7 @@ async function updCheck(manual){if(!isNative())return;const P=updPlug();UPD.err=
   UPD.done=1;
   if(state.tab==="dati"&&!state.paz&&!state.stima)rerender();
   if(manual&&!updNew())toast(`DietDesk è aggiornato (${APP_VER})`);
-  if(!manual&&updNew())toast(`Disponibile DietDesk ${UPD.latest.version}: aggiorna da Dati`)}
+  if(!manual&&updNew())toast(`Disponibile DietDesk ${UPD.latest.version}: aggiorna da Impostazioni`)}
 const updSt=t=>{UPD.st=t;const e=document.getElementById("updst");if(e){e.textContent=t;e.hidden=!t}};
 async function updInstall(){const L=UPD.latest;if(!L)return;const P=updPlug();UPD.err="";
   if(!P){UPD.err="Componente di aggiornamento non disponibile: usa \"Scarica dal browser\".";return rerender()}
@@ -3071,10 +3147,6 @@ function abkBind(){const c=$("#abkon");if(c)c.onchange=()=>{state.kv.opt.autoBk=
 setTimeout(()=>{try{if(abkOn()&&Date.now()-(state.kv.opt.lastAutoBk||0)>864e5)autoBackup(true)}catch(e){}},6000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&window.abkDirty)autoBackup(false)});
 
-/* ═════════ vecchio indirizzo (dastan94.github.io/nutridesk-app): invito a spostarsi ═════════ */
-if(location.hostname==="dastan94.github.io"){try{if(!sessionStorage.getItem("movebar")){const b=document.createElement("div");b.className="movebar";b.setAttribute("role","status");
-  b.innerHTML=`<span><b>NutriDesk ora si chiama DietDesk</b> e ha un nuovo indirizzo: <a href="https://dietdesk.github.io/" target="_blank" rel="noopener">dietdesk.github.io</a>. Per portare i dati: qui <b>Dati → Crea backup</b>, poi nel nuovo indirizzo <b>Dati → Ripristina</b>.</span><button type="button" aria-label="Chiudi">✕</button>`;
-  b.querySelector("button").onclick=()=>{b.remove();try{sessionStorage.setItem("movebar","1")}catch(e){}};document.body.appendChild(b)}}catch(e){}}
 /* ═════════ avvio ═════════ */
 load().then(()=>{render();syncLoad();if("launchQueue" in window)launchQueue.setConsumer(async lp=>{for(const h of lp.files||[])handleFile(await h.getFile())})});
 if("serviceWorker" in navigator&&location.protocol==="https:"&&!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()))navigator.serviceWorker.register("sw.js").catch(()=>{});
