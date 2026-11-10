@@ -9,9 +9,11 @@ h1{margin:0 0 4px}h2{margin-top:28px;font-size:19px}a{color:#1f6b4f}.sub{color:#
 <h1>DietDesk</h1><p class="sub">Piani dietetici per dietisti e nutrizionisti: pazienti, diete con alternative, prescrizioni, visite, diario alimentare e confronto con i LARN.</p>
 <a class="btn" href="./">Apri l'app</a><a class="btn" href="privacy.html">Informativa privacy</a>
 <h2>Come installarla</h2>
-<p><b>Android:</b> scarica l'APK dall'ultima versione indicata dallo sviluppatore e aprilo per installarlo. Gli aggiornamenti successivi si fanno dall'app (Dati → Aggiornamenti).</p>
+<p><b>Android:</b> <a class="btn" id="apk" href="#">Scarica l'app per Android</a><br>
+Se il download resta fermo, apri questa pagina in Chrome o Edge (non dentro altre app) e conferma "Scarica comunque". Poi apri il file per installarlo: la prima volta Android chiede di consentire l'installazione dal browser. Gli aggiornamenti successivi si fanno dall'app (Impostazioni → Aggiornamenti).</p>
 <p><b>iPhone:</b> apri <a href="./">l'app</a> in Safari → Condividi → Aggiungi alla schermata Home.</p>
-<p><b>PC:</b> apri <a href="./">l'app</a> in Edge o Chrome → menu → App → Installa.</p>
+<p><b>PC:</b> apri <a href="./">l'app</a> in Chrome o Edge e clicca l'icona <i>Installa</i> nella barra dell'indirizzo (oppure menu → Trasmetti, salva e condividi → Installa pagina come app). Si apre in una sua finestra e funziona anche offline.</p>
 <h2>Dove sono i dati</h2>
 <p>I dati restano sul dispositivo di chi usa l'app. Se si attiva la sincronizzazione con Google Drive, viene salvata una copia cifrata nello spazio riservato all'app del Google Drive personale dell'utente. Dettagli nell'<a href="privacy.html">informativa privacy</a>.</p>
+<script>fetch("version.json",{cache:"no-store"}).then(r=>r.json()).then(j=>{const a=document.getElementById("apk");a.href=j.apk;a.textContent="Scarica l'app per Android ("+j.version+")"}).catch(()=>{})</script>
 </body></html>
