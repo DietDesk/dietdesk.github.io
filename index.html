@@ -725,8 +725,8 @@ function newPr(base){return{id:uid(),nome:"Prescrizione",dal:"",kcal:1800,pP:18,
 function R(p,d){const L=p.prescrizioni;if(d&&d.pid){const x=L.find(r=>r.id===d.pid);if(x)return x}
   const k=d&&d.data?dkey(d.data):dkey(today());let best=null,bk=-1;for(const r of L){const rk=r.dal?dkey(r.dal):0;if(rk<=k&&rk>bk){best=r;bk=rk}}return best||L[0]}
 function targets(p,r){r=r||R(p);const k=r.kcal,w=pesoRef(p);
-  const P=r.pkg&&w?r.pkg*w:k*(r.pP||18)/100/4;const L=k*r.pL/100/9;const G=Math.max(0,(k-P*4-L*9)/3.75);
-  return{KCAL:k,PROTEINE:P,LIPIDI:L,GLUCIDI:G,FIBRA:r.fibra||25,pP:P*4/k*100,pL:r.pL,pG:G*3.75/k*100,gkg:w?P/w:null}}
+  const P=r.pkg&&w?r.pkg*w:k*(r.pP||18)/100/4;const L=k*r.pL/100/9;const G=Math.max(0,(k-P*4-L*9)/4);
+  return{KCAL:k,PROTEINE:P,LIPIDI:L,GLUCIDI:G,FIBRA:r.fibra||25,pP:P*4/k*100,pL:r.pL,pG:G*4/k*100,gkg:w?P/w:null}}
 function mealShare(r,nome){const s=r.split.find(x=>x[0]===nome);return s?s[1]/100:null}
 function mealTargets(p,r,nome){const t=targets(p,r),sh=mealShare(r,nome);if(sh==null)return null;return{KCAL:t.KCAL*sh,PROTEINE:t.PROTEINE*sh,LIPIDI:t.LIPIDI*sh,GLUCIDI:t.GLUCIDI*sh,FIBRA:t.FIBRA*sh,share:sh}}
 
@@ -847,7 +847,7 @@ function dietaHTML(p){
   <div class="daygrid"><aside class="dayside"><section class="summary">
     <div class="kcalline"><span class="big num">${fmt(T.KCAL)}</span><span class="of num">/ ${fmt(tg.KCAL)}kcal</span><span class="pct num ${kp>105||kp<95?"over":"okc"}">${Math.round(kp)}%</span></div>
     <div class="track"><i style="width:${Math.min(100,kp)}%"></i></div>
-    <div class="macros">${mac("PROTEINE","Prot.","--p",4,tg.pP)}${mac("LIPIDI","Lipidi","--l",9,tg.pL)}${mac("GLUCIDI","Gluc.","--g",3.75,tg.pG)}${mac("FIBRA","Fibra","--f",0)}</div>
+    <div class="macros">${mac("PROTEINE","Prot.","--p",4,tg.pP)}${mac("LIPIDI","Lipidi","--l",9,tg.pL)}${mac("GLUCIDI","Gluc.","--g",4,tg.pG)}${mac("FIBRA","Fibra","--f",0)}</div>
     <div class="note num">${w?`Proteine ${fmt(T.PROTEINE/w,2)}g/kg · `:""}zuccheri solubili ${fmt(T.GLUC_SOL)}g · saturi ${fmt(T.AC_SATURI_T)}g (${pctE(T.AC_SATURI_T,9)}% kcal) · sodio ${fmt(T.SODIO)}mg · colesterolo ${fmt(T.COLESTER)}mg</div>
     <details class="more"><summary>Tutti i nutrienti del giorno</summary>${nutrTable(T)}</details>
     ${larnChip(p,d)}
@@ -1118,7 +1118,7 @@ function prescrHTML(p){
    <div class="field"><label>Glucidi (% kcal)</label><input disabled value="${fmt(t.pG,1)}"><span class="hint">Calcolati per differenza</span></div></div>
    <div class="kv num"><div><span>Proteine</span><b>${fmt(t.PROTEINE)}g</b><span>${fmt(t.pP,1)}%${t.gkg?" · "+fmt(t.gkg,2)+"g/kg":""}</span></div><div><span>Lipidi</span><b>${fmt(t.LIPIDI)}g</b><span>${fmt(t.pL,1)}%</span></div><div><span>Glucidi</span><b>${fmt(t.GLUCIDI)}g</b><span>${fmt(t.pG,1)}%</span></div><div><span>Fibra</span><b>${fmt(t.FIBRA)}g</b><span>${fmt(t.FIBRA/r.kcal*1000,1)}g/1000kcal</span></div></div>
    ${t.pG<40?`<p class="note over">Glucidi sotto il 40% delle kcal: controlla proteine e lipidi.</p>`:""}
-   <p class="note">Fattori di conversione: proteine 4kcal/g, lipidi 9kcal/g, glucidi 3,75kcal/g.</p>
+   <p class="note">Fattori di conversione: proteine 4kcal/g, lipidi 9kcal/g, glucidi 4kcal/g.</p>
   </div>
   ${mbCardHTML(p,r)}
   <div class="card"><div class="head"><h3>Suddivisione calorica dei pasti</h3></div>
@@ -1310,7 +1310,7 @@ const subModeLabel=m=>(SUB_MODES.find(x=>x[0]===m)||SUB_MODES[0])[1];
 function eqGrams(f0,g0,f1,mode,st){st=st||state.kv.opt.subStep||5;if(mode==="PESO")return g0>0?Math.max(st,Math.round(g0/st)*st):null;const ref=val(f0,mode,g0),per=f1.v[CI[mode]]||0;if(!f0||!per||ref<=0)return null;return Math.max(st,Math.round(ref/per*100/st)*st)}
 function subsOf(x){const f0=food(x.n),mode=x.sm||"KCAL",st=x.ss||state.kv.opt.subStep||5;return(x.sost||[]).map(s=>{const f1=food(s.n);return{n:s.n,f:f1,g:!(f0&&f1)?null:s.r?Math.max(st,Math.round(s.r*x.g/st)*st):eqGrams(f0,x.g,f1,mode,x.ss)}})}
 const subsLine=x=>{const S=subsOf(x);return S.length?`<span class="subs">oppure ${S.map(s=>esc(s.n)+(s.g?" "+fmt(s.g)+"g":"")).join(" · ")}</span>`:""};
-const shares=f=>{const k=(f.v[CI.PROTEINE]||0)*4+(f.v[CI.LIPIDI]||0)*9+(f.v[CI.GLUCIDI]||0)*3.75||1;return[(f.v[CI.PROTEINE]||0)*4/k,(f.v[CI.LIPIDI]||0)*9/k,(f.v[CI.GLUCIDI]||0)*3.75/k]};
+const shares=f=>{const k=(f.v[CI.PROTEINE]||0)*4+(f.v[CI.LIPIDI]||0)*9+(f.v[CI.GLUCIDI]||0)*4||1;return[(f.v[CI.PROTEINE]||0)*4/k,(f.v[CI.LIPIDI]||0)*9/k,(f.v[CI.GLUCIDI]||0)*4/k]};
 function suggestSubs(f0,g0,mode,exclude,x0st){
   const s0=shares(f0),pool=FOODS.filter(f=>f!==f0&&f.o!=="r"&&!exclude.has(key(f.n))&&(mode==="PESO"||(f.v[CI[mode]]||0)>0)&&(f.v[CI.KCAL]||0)>0&&!conflicts(f).length);
   const sc=f0.c&&!["50","60"].includes(f0.c)?f0.c:null;
@@ -1524,8 +1524,8 @@ const LARN_GLABEL={"11M":"maschi 11-14 anni","11F":"femmine 11-14 anni","15M":"m
 function larnRows(p,T,g,cov){cov=cov||{};const w=pesoRef(p),k=T.KCAL||0,gi=LARN_G.indexOf(g),R=[];const en=(x,f)=>k>0?x*f/k*100:0;
   if(w)R.push(["Energia e macronutrienti","PROTEINE","Proteine",T.PROTEINE,LARN_PROT[g]*w,"PRI","min","g",`${fmt(LARN_PROT[g],2)}g/kg × ${fmt(w,1)}kg · assunzione ${fmt(T.PROTEINE/w,2)}g/kg`]);
   R.push(["Energia e macronutrienti","LIPIDI","Lipidi (% kcal)",en(T.LIPIDI,9),[20,35],"RI","range","%",""]);
-  R.push(["Energia e macronutrienti","GLUCIDI","Glucidi (% kcal)",en(T.GLUCIDI,3.75),[45,60],"RI","range","%",""]);
-  R.push(["Energia e macronutrienti","GLUC_SOL","Zuccheri (% kcal)",en(T.GLUC_SOL,3.75),15,"SDT","max","%","zuccheri totali"]);
+  R.push(["Energia e macronutrienti","GLUCIDI","Glucidi (% kcal)",en(T.GLUCIDI,4),[45,60],"RI","range","%",""]);
+  R.push(["Energia e macronutrienti","GLUC_SOL","Zuccheri (% kcal)",en(T.GLUC_SOL,4),15,"SDT","max","%","zuccheri totali"]);
   R.push(["Energia e macronutrienti","AC_SATURI_T","Acidi grassi saturi (% kcal)",en(T.AC_SATURI_T,9),10,"SDT","max","%",""]);
   R.push(["Energia e macronutrienti","FIBRA","Fibra",T.FIBRA,Math.max(g.startsWith("11")?0:25,12.6*k/1000),"AI","min","g","12,6g ogni 1000kcal, almeno 25g negli adulti"]);
   R.push(["Minerali","SODIO","Sodio",T.SODIO,2000,"SDT","max","mg","AI 1500mg; obiettivo: non superare 2000mg (5g di sale)"]);
@@ -1734,8 +1734,8 @@ function viewStima(){
   const days=`<div class="pills" id="sdays" style="margin:0 0 12px">${s.giorni.map((g,i)=>`<button class="pill" data-d="${i}" aria-pressed="${i===stDay}">${esc(g.titolo)}</button>`).join("")}${multi?`<button class="pill" data-d="${nd}" aria-pressed="${media}">Media${nf?` (${nf})`:""}</button>`:""}<button class="pill" id="sadd">+ Giorno</button></div>`;
   const summ=`<section class="summary">
     <div class="kcalline"><span class="big num">${fmt(T.KCAL)}</span><span class="of num">kcal${media?` · media di ${nf} ${nf===1?"giorno":"giorni"} compilati`:""}${s.peso&&T.KCAL?` · ${fmt(T.KCAL/s.peso)}kcal/kg`:""}</span></div>
-    <div class="macros" style="margin-top:10px">${mac("PROTEINE","Prot.","--p",4,pkg)}${mac("LIPIDI","Lipidi","--l",9,"% kcal")}${mac("GLUCIDI","Gluc.","--g",3.75,"% kcal")}${mac("FIBRA","Fibra","--f",0,"rif. 25g")}</div>
-    <div class="note num">zuccheri solubili ${fmt(T.GLUC_SOL)}g (${pc(T.GLUC_SOL,3.75)}% kcal) · saturi ${fmt(T.AC_SATURI_T)}g (${pc(T.AC_SATURI_T,9)}% kcal) · sodio ${fmt(T.SODIO)}mg · colesterolo ${fmt(T.COLESTER)}mg${T.ALCOL?` · alcol ${fmt(T.ALCOL)}g`:""}</div>
+    <div class="macros" style="margin-top:10px">${mac("PROTEINE","Prot.","--p",4,pkg)}${mac("LIPIDI","Lipidi","--l",9,"% kcal")}${mac("GLUCIDI","Gluc.","--g",4,"% kcal")}${mac("FIBRA","Fibra","--f",0,"rif. 25g")}</div>
+    <div class="note num">zuccheri solubili ${fmt(T.GLUC_SOL)}g (${pc(T.GLUC_SOL,4)}% kcal) · saturi ${fmt(T.AC_SATURI_T)}g (${pc(T.AC_SATURI_T,9)}% kcal) · sodio ${fmt(T.SODIO)}mg · colesterolo ${fmt(T.COLESTER)}mg${T.ALCOL?` · alcol ${fmt(T.ALCOL)}g`:""}</div>
     <details class="more"><summary>Tutti i nutrienti${media?" (media)":""}</summary>${nutrTable(T)}</details>
     ${stLarnChip(s,T,media?stFull(s):[d])}</section>`;
   let right;
@@ -1950,7 +1950,7 @@ function diarioHTML(p){
   const cmp=[["Energia","KCAL"],["Proteine","PROTEINE"],["Lipidi","LIPIDI"],["Glucidi","GLUCIDI"],["Fibra","FIBRA"]].map(([l,c])=>{const v=pdiff(T[c],tg[c]);return `<div class="dcmp-r"><span>${l}</span><b class="num ${pdCls(v)}">${pdTxt(v)}</b></div>`}).join("");
   const summ=`<section class="summary">
     <div class="kcalline"><span class="big num">${fmt(T.KCAL)}</span><span class="of num">kcal assunte${media?` · media di ${days.length} ${days.length===1?"giorno":"giorni"}`:""}</span></div>
-    <div class="note num" style="margin-top:6px">P ${fmt(T.PROTEINE)}g (${pc(T.PROTEINE,4)}%) · L ${fmt(T.LIPIDI)}g (${pc(T.LIPIDI,9)}%) · G ${fmt(T.GLUCIDI)}g (${pc(T.GLUCIDI,3.75)}%) · fibra ${fmt(T.FIBRA)}g${tg.gkg?` · ${fmt(T.PROTEINE/pesoRef(p),2)}g/kg di proteine`:""}</div>
+    <div class="note num" style="margin-top:6px">P ${fmt(T.PROTEINE)}g (${pc(T.PROTEINE,4)}%) · L ${fmt(T.LIPIDI)}g (${pc(T.LIPIDI,9)}%) · G ${fmt(T.GLUCIDI)}g (${pc(T.GLUCIDI,4)}%) · fibra ${fmt(T.FIBRA)}g${tg.gkg?` · ${fmt(T.PROTEINE/pesoRef(p),2)}g/kg di proteine`:""}</div>
     <div class="label" style="margin-top:12px">Rispetto alla prescrizione${p.prescrizioni.length>1?` (${esc(r.nome)})`:""}</div>
     <div class="dcmp">${cmp}</div>
     <details class="more"><summary>Tutti i nutrienti${media?" (media)":""}</summary>${nutrTable(T)}</details>
@@ -2418,7 +2418,7 @@ function editFood(f){
      if(isNew&&food(n))return toast("Esiste già un alimento con questo nome");
      COLS.forEach((c,i)=>{const el=s.querySelector("#f_"+c);if(el)v[i]=num(el.value)??0});
      const P=v[CI.PROTEINE],L=v[CI.LIPIDI],G=v[CI.GLUCIDI];let calc=false;
-     if(!v[CI.KCAL]&&(P||L||G)){v[CI.KCAL]=Math.round(P*4+L*9+G*3.75);calc=true}
+     if(!v[CI.KCAL]&&(P||L||G)){v[CI.KCAL]=Math.round(P*4+L*9+G*4);calc=true}
      await saveFood({n,c:s.querySelector("#fc").value,o:f&&!f._dup&&f.o==="x"?"x":"u",v});closeSheet();rerender();toast(calc?"Alimento salvato, kcal calcolate dai macronutrienti":"Alimento salvato")}},true);
 }
 function editRecipe(r){
@@ -3148,7 +3148,7 @@ async function nativeOpen(url){try{const r=await window.Capacitor.Plugins.Filesy
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="0.22.2"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="0.22.3"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
