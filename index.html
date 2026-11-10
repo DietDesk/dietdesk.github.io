@@ -2,6 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -719,6 +720,10 @@ function migrate(p){
   if(!p.prescrizioni&&!p.prescr){const t=p.target||{KCAL:2000,PROTEINE:80,LIPIDI:65,GLUCIDI:260,FIBRA:25};
     const k=t.KCAL||2000;p.prescr={kcal:k,pP:Math.round(t.PROTEINE*4/k*100),pL:Math.round(t.LIPIDI*9/k*100),pkg:0,fibra:t.FIBRA||25,split:SPLITS[5].map(x=>x.slice())};delete p.target}
   if(!p.prescrizioni){p.prescrizioni=[{id:uid(),nome:"Prescrizione",dal:"",...p.prescr}];delete p.prescr}
+  /* file incompleti o modificati a mano: almeno una prescrizione valida e gli elenchi sempre presenti */
+  if(!Array.isArray(p.prescrizioni)||!p.prescrizioni.length)p.prescrizioni=[newPr()];
+  p.prescrizioni.forEach(r=>{if(!(r.kcal>0))r.kcal=1800;if(r.pL==null)r.pL=30;if(!Array.isArray(r.split)||!r.split.length)r.split=SPLITS[5].map(x=>x.slice())});
+  if(!Array.isArray(p.giorni))p.giorni=[];if(!Array.isArray(p.visite))p.visite=[];
 }
 function newPr(base){return{id:uid(),nome:"Prescrizione",dal:"",kcal:1800,pP:18,pL:30,pkg:0,fibra:25,split:SPLITS[5].map(x=>x.slice()),...(base?clean(base):{}),...(base?{id:uid()}:{})}}
 /* prescrizione in vigore: quella assegnata al giorno, altrimenti la più recente con data d'inizio ≤ data del giorno (a parità, la prima dell'elenco) */
@@ -1051,10 +1056,15 @@ const MB_F={
   cunn:{l:"Cunningham (massa magra)",f:(s,W,H,A,FFM)=>500+22*FFM,need:"F"}};
 const LAF_P=[[1.45,"Sedentario"],[1.6,"Moderatamente attivo"],[1.75,"Attivo"],[2.1,"Molto attivo"]];
 /* dati del paziente: ultima visita per peso e composizione corporea */
-function mbData(p){const v=lastVisit(p)||{},W=pesoRef(p),H=p.altezza||v.altezza,A=ageN(p.data_nascita),b=v.bia||{};
-  let FFM=null,src="";if(b.mm>0){FFM=+b.mm;src="BIA"}else if(b.mg>0&&W){FFM=W*(1-b.mg/100);src="BIA (da % massa grassa)"}
-  else{const c=v.peso?visitCalc(p,v):{};if(c.mgPl>0&&W){FFM=W*(1-c.mgPl/100);src="pliche"}}
-  return{W,H,A,s:p.sesso==="M"?"M":"F",FFM,ffmSrc:src,bia:b.mb>0?+b.mb:null,bmi:W&&H?W/((H/100)**2):null}}
+function mbData(p){const v=lastVisit(p)||{},W=pesoRef(p),H=p.altezza||v.altezza,A=ageN(p.data_nascita);
+  /* composizione corporea: la visita più recente che ha BIA o pliche (anche se dopo c'è stata una visita con il solo peso) */
+  const V=(p.visite||[]).slice().sort((a,b)=>dkey(b.data)-dkey(a.data));let FFM=null,src="",bia=null;
+  for(const x of V){const b=x.bia||{},Wx=+x.peso||W,qd=x===v?"":` del ${x.data}`;
+    if(b.mb>0&&bia==null)bia=+b.mb;
+    if(b.mm>0){FFM=+b.mm;src="BIA"+qd;break}
+    if(b.mg>0&&Wx){FFM=Wx*(1-b.mg/100);src="BIA, da % massa grassa"+qd;break}
+    const c=x.peso?visitCalc(p,x):{};if(c.mgPl>0&&Wx){FFM=Wx*(1-c.mgPl/100);src="pliche"+qd;break}}
+  return{W,H,A,s:p.sesso==="M"?"M":"F",FFM,ffmSrc:src,bia,bmi:W&&H?W/((H/100)**2):null}}
 /* formule calcolabili e quali sono adatte al caso */
 function mbCalc(p){const d=mbData(p),out=[];
   if(d.A!=null&&d.A<18)return{d,rows:[],avg:null,note:"Le formule qui sono per adulti: sotto i 18 anni usa i valori dei LARN per età e sesso."};
@@ -1633,7 +1643,7 @@ function refertoHTML(p,v,o){const V=(p.visite||[]).slice().sort((a,b)=>dkey(a.da
       ${pts.map((x,k)=>k===0||k===pts.length-1||pts.length<=6?`<text x="${X(k).toFixed(1)}" y="${H-6}" text-anchor="${k===0?"start":k===pts.length-1?"end":"middle"}" fill="#666">${x.d.slice(0,6)+x.d.slice(8)}</text>`:"").join("")}</svg>`}
   const fu=p.follow&&p.follow.data?p.follow:null;
   return `<div class="pdoc pd-port"><header class="pd-h"><div><div class="pd-t">${esc(o.titoloRef||"Referto della visita")}</div><div class="pd-n">${esc(p.nome)}</div></div><div class="pd-d">${esc(v.data)}</div></header>
-    <div class="pd-s">${[age(p.data_nascita),p.sesso==="M"?"maschio":"femmina",(v.altezza||p.altezza)?`altezza ${fmt(v.altezza||p.altezza,1)}cm`:"",p.peso_obiettivo?`obiettivo ${p.peso_obiettivo}`:""].filter(Boolean).join(" · ")}</div>
+    <div class="pd-s">${[age(p.data_nascita),p.sesso==="M"?"maschio":"femmina",(v.altezza||p.altezza)?`altezza ${fmt(v.altezza||p.altezza,1)}cm`:"",p.peso_obiettivo?`obiettivo ${esc(p.peso_obiettivo)}`:""].filter(Boolean).join(" · ")}</div>
     <table class="pd-tab rf-t"><thead><tr><th>Misura</th><th>${esc(v.data)}</th>${prev?`<th>Visita precedente<br><small>${esc(prev.data)}</small></th><th>Variazione</th>`:""}${first&&first!==prev?`<th>Prima visita<br><small>${esc(first.data)}</small></th><th>Variazione</th>`:""}</tr></thead><tbody>
     ${R.map(r=>`<tr><td>${esc(r.l)}</td><td><b>${fmt(r.a,r.d)}${r.u}</b></td>${prev?`<td>${r.b?fmt(r.b,r.d)+r.u:"–"}</td><td>${dv(r.a,r.b,r.d,r.u)}</td>`:""}${first&&first!==prev?`<td>${r.f?fmt(r.f,r.d)+r.u:"–"}</td><td>${dv(r.a,r.f,r.d,r.u)}</td>`:""}</tr>`).join("")}</tbody></table>
     ${cv.bmi&&o.bmiClass!==false?`<p class="rf-n">BMI ${fmt(cv.bmi,1)}: ${bmiClass(cv.bmi)}.</p>`:""}
@@ -2541,6 +2551,7 @@ async function handleFile(file){
     if(name.endsWith(".cpd")){const n=await importCpd(buf);toast(`${n} alimenti personali aggiornati`);rerender();return}
     const j=JSON.parse(new TextDecoder("utf-8").decode(buf));
     if(j.app==="nutridesk-mobile")return restore(j);
+    if(isEncBk(j))return restoreEnc(j);
     const p=fromNdiet(j);await savePaz(p);toast(`Importato ${p.nome}`);state.tab="pazienti";openPaz(p);
   }catch(e){console.error(e);toast("File non riconosciuto: "+file.name)}
 }
@@ -2750,7 +2761,9 @@ async function saveFile(name,obj){
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast("File salvato in Download");
 }
 function exportNdiet(p){saveFile(p.nome.replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_")+".ndiet",toNdiet(p))}
-function backup(){const d=new Date();state.kv.opt.lastBk=Date.now();saveKV("opt");saveFile(`DietDesk_backup_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}.json`,{app:"nutridesk-mobile",versione:2,creato:d.toISOString(),pazienti:clean(state.pazienti),alimenti:clean(state.userFoods),kv:clean(state.kv)})}
+async function backup(){const d=new Date();await bkcLoad();const o=backupObj();
+  const data=bkcOn()?await bkcWrap(o):o;state.kv.opt.lastBk=Date.now();saveKV("opt");
+  saveFile(`DietDesk_backup_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}.json`,data)}
 function restore(j){
   confirmSheet("Ripristinare il backup?",`Il file contiene ${j.pazienti.length} pazienti e ${j.alimenti.length} alimenti${j.kv?", oltre a preset, giornate tipo, pasti e porzioni":""}. Gli elementi già presenti con lo stesso identificativo vengono sostituiti; gli altri restano.`,"Ripristina",async()=>{
     for(const f of j.alimenti)await saveFood(f);
@@ -2769,7 +2782,7 @@ const fmtWhen=t=>{if(!t)return"mai";const d=new Date(t),td=new Date();const same
 function secList(){const o=state.kv.opt,L=[];
   if(isNative())L.push(["agg","Aggiornamenti",updNew()?`Disponibile la ${UPD.latest.version}`:`Versione ${APP_VER}`]);
   L.push(["sync","Sincronizzazione",syncOn()?syncLabel():"Non collegata · Google Drive"]);
-  L.push(["backup","Backup",isNative()?(abkOn()?(o.lastAutoBk?`Automatico · ultimo ${fmtWhen(o.lastAutoBk)}`:"Automatico · nessun backup ancora"):"Automatico disattivato"):(o.lastBk?`Ultimo backup ${fmtWhen(o.lastBk)}`:"Nessun backup fatto da qui")]);
+  L.push(["backup","Backup",isNative()?(abkOn()?(BKC.loaded&&!bkcOn()?"In pausa: imposta la passphrase":o.lastAutoBk?`Automatico · ultimo ${fmtWhen(o.lastAutoBk)}`:"Automatico · nessun backup ancora"):"Automatico disattivato"):(o.lastBk?`Ultimo backup ${fmtWhen(o.lastBk)}`:"Nessun backup fatto da qui")]);
   L.push(["imp","Importa file","Excel, Progetto Dieta (.ppd e .cpd), file .ndiet"]);
   L.push(["asp","Aspetto","Tema chiaro o scuro, colore principale"]);
   L.push(["arch","Archivio",`${state.pazienti.length} pazienti · ${FOODS.length} alimenti`]);
@@ -3148,7 +3161,7 @@ async function nativeOpen(url){try{const r=await window.Capacitor.Plugins.Filesy
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="0.22.3"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="1.0.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
@@ -3182,7 +3195,56 @@ function updBind(){const c=$("#updck");if(c)c.onclick=()=>{toast("Controllo…")
   if(isNative()&&!UPD.done&&!UPD._busy){UPD._busy=1;updCheck(false).finally(()=>{UPD._busy=0})}}
 setTimeout(()=>{try{if(isNative()&&Date.now()-((state.kv.opt||{}).updChk||0)>432e5)updCheck(false)}catch(e){}},4000);
 
-/* ═════════ backup automatico (app Android): Documenti/DietDesk/Backup, un file al giorno, archivio di 30 giorni ═════════ */
+/* ═════════ backup cifrati ═════════ */
+/* La passphrase dei backup non viene salvata: sul dispositivo resta solo la chiave che se ne ricava (non esportabile),
+   così i backup automatici si scrivono senza chiederla. Per aprire un backup su un altro dispositivo serve la passphrase. */
+const BKC={key:null,salt:null,loaded:false},BK_AAD="dietdesk-backup";
+async function bkcLoad(){if(BKC.loaded)return;try{const x=await store.get("kv","bkkey");if(x&&x.key&&x.salt){BKC.key=x.key;BKC.salt=x.salt}BKC.loaded=true}catch(e){}}
+const bkcOn=()=>!!BKC.key;
+async function bkcSet(pass){const salt=b64(crypto.getRandomValues(new Uint8Array(16))),key=await deriveKey(pass,salt);
+  const old={key:BKC.key,salt:BKC.salt};BKC.key=key;BKC.salt=salt;BKC.loaded=true;await store.put("kv",{key,salt},"bkkey");return old}
+async function bkcWrap(o){const e=await enc(o,BK_AAD,BKC.key);return{app:"dietdesk-backup",cifrato:1,versione:3,creato:o.creato,salt:BKC.salt,iv:e.iv,ct:e.ct}}
+const isEncBk=j=>!!(j&&j.app==="dietdesk-backup"&&j.cifrato&&typeof j.iv==="string"&&typeof j.ct==="string"&&typeof j.salt==="string");
+async function bkcOpen(j,pass){const k=pass!=null?await deriveKey(pass,j.salt):BKC.key;const o=await dec(j.iv,j.ct,BK_AAD,k);
+  if(!o||o.app!=="nutridesk-mobile"||!Array.isArray(o.pazienti)||!Array.isArray(o.alimenti))throw new Error("contenuto non valido");return o}
+async function restoreEnc(j){await bkcLoad();
+  if(BKC.key&&j.salt===BKC.salt){try{return restore(await bkcOpen(j))}catch(e){}}
+  sheet(`<h2>Backup protetto</h2><p style="color:var(--ink-2);margin:0 0 12px">Scrivi la passphrase dei backup usata quando è stato creato questo file.</p>
+    <div class="field"><label for="bkpw">Passphrase</label><input id="bkpw" type="password" autocomplete="current-password"></div>
+    <div class="actions"><button class="btn" data-close>Annulla</button><button class="btn primary" id="ok">Apri</button></div>`,sh=>{
+    const i=sh.querySelector("#bkpw"),b=sh.querySelector("#ok");setTimeout(()=>i.focus(),50);
+    const go=async()=>{if(!i.value)return;b.disabled=true;b.textContent="Verifica…";
+      try{const o=await bkcOpen(j,i.value);closeSheet();restore(o)}catch(e){b.disabled=false;b.textContent="Apri";toast("Passphrase errata")}};
+    b.onclick=go;i.onkeydown=e=>{if(e.key==="Enter")go()}})}
+/* imposta o cambia la passphrase; sull'app Android cifra anche i backup già presenti nella cartella */
+function bkcSheet(){const ch=bkcOn();
+  sheet(`<h2>${ch?"Cambia la passphrase dei backup":"Proteggi i backup"}</h2>
+    <p style="color:var(--ink-2);margin:0 0 12px">I backup vengono cifrati: senza passphrase nessuno può leggerli. <b>Se la dimentichi non si possono più aprire</b>, quindi conservala con cura. Puoi usare la stessa di Google Drive.</p>
+    <div class="field"><label for="bkp1">Nuova passphrase (almeno 10 caratteri)</label><input id="bkp1" type="password" autocomplete="new-password"></div>
+    <div class="field"><label for="bkp2">Ripeti la passphrase</label><input id="bkp2" type="password" autocomplete="new-password"></div>
+    <div class="actions"><button class="btn" data-close>Annulla</button><button class="btn primary" id="ok">Salva</button></div>`,sh=>{
+    const b=sh.querySelector("#ok");setTimeout(()=>sh.querySelector("#bkp1").focus(),50);
+    b.onclick=async()=>{const p1=sh.querySelector("#bkp1").value,p2=sh.querySelector("#bkp2").value;
+      if(p1.length<10)return toast("La passphrase deve avere almeno 10 caratteri");if(p1!==p2)return toast("Le due passphrase non coincidono");
+      b.disabled=true;b.textContent="Cifratura…";const old=await bkcSet(p1);let r={n:0,ko:0};
+      if(isNative()){r=await abkReencrypt(old);await autoBackup(true)}
+      closeSheet();toast(r.ko?`Backup protetti. ${r.ko} file vecchi non si possono cifrare: eliminali dalla cartella Documenti/DietDesk/Backup`:"Backup protetti con la passphrase");rerender()}})}
+/* riscrive con la chiave nuova i file della cartella: quelli in chiaro e quelli cifrati con la chiave precedente */
+async function abkReencrypt(old){const FS=window.Capacitor.Plugins.Filesystem;let n=0,ko=0;
+  for(const f of await abkList()){const path=ABK_DIR+"/"+f;
+    try{const r=await FS.readFile({path,directory:"DOCUMENTS",encoding:"utf8"});const j=JSON.parse(r.data);let o=null;
+      if(j&&j.app==="nutridesk-mobile")o=j;else if(isEncBk(j)){if(j.salt===BKC.salt)continue;if(old.key&&j.salt===old.salt)o=await dec(j.iv,j.ct,BK_AAD,old.key);else continue}else continue;
+      await FS.writeFile({path,data:JSON.stringify(await bkcWrap(o)),directory:"DOCUMENTS",encoding:"utf8"});n++}
+    catch(e){ko++}}
+  return{n,ko}}
+function bkcCardHTML(){const on=bkcOn(),nat=isNative();
+  return `<div class="card"><h3>Protezione dei backup</h3>
+    ${on?`<p style="margin-top:0">🔒 I backup ${nat?"automatici e quelli che crei ":"che crei "}sono <b>cifrati</b> con la tua passphrase.</p>`
+      :nat?`<p class="over" style="margin-top:0">Backup automatico in pausa: imposta una passphrase. I file nella cartella Documenti sono leggibili da altre app, per questo DietDesk li salva solo cifrati.</p>`
+      :`<p style="margin-top:0">I backup creati da qui sono in chiaro. Con una passphrase vengono cifrati: utile se li conservi su chiavette, cloud o email.</p>`}
+    <div class="actions"><button class="btn${on?"":" primary"}" id="bkcset">${on?"Cambia passphrase":"Imposta passphrase"}</button></div></div>`}
+
+/* ═════════ backup automatico (app Android): Documenti/DietDesk/Backup, un file al giorno cifrato, archivio di 30 giorni ═════════ */
 const ABK_DIR="DietDesk/Backup",ABK_DAYS=30;
 const ABK={busy:false,files:null,err:""};
 const abkOn=()=>isNative()&&state.kv.opt.autoBk!==false;
@@ -3190,12 +3252,12 @@ const abkName=d=>`DietDesk_backup_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pa
 const backupObj=()=>({app:"nutridesk-mobile",versione:2,creato:new Date().toISOString(),pazienti:clean(state.pazienti),alimenti:clean(state.userFoods),kv:clean(state.kv)});
 async function abkList(){const FS=window.Capacitor.Plugins.Filesystem;
   try{const r=await FS.readdir({path:ABK_DIR,directory:"DOCUMENTS"});return(r.files||[]).map(f=>typeof f==="string"?f:f.name).filter(n=>/^DietDesk_backup_\d{4}-\d{2}-\d{2}\.json$/.test(n)).sort()}catch(e){return[]}}
-/* scrive (o sovrascrive) il file di oggi e cancella quelli più vecchi di 30 giorni */
+/* scrive (o sovrascrive) il file di oggi, solo cifrato, e cancella quelli più vecchi di 30 giorni */
 async function autoBackup(force){
-  if(!abkOn()||ABK.busy||!state.persist)return;const o=state.kv.opt,now=Date.now();
+  if(!abkOn()||ABK.busy||!state.persist)return;await bkcLoad();if(!bkcOn())return;const o=state.kv.opt,now=Date.now();
   if(!force&&o.lastAutoBk&&now-o.lastAutoBk<10*60e3&&!window.abkDirty)return;
   ABK.busy=true;const FS=window.Capacitor.Plugins.Filesystem;
-  try{await FS.writeFile({path:ABK_DIR+"/"+abkName(new Date()),data:JSON.stringify(backupObj()),directory:"DOCUMENTS",encoding:"utf8",recursive:true});
+  try{await FS.writeFile({path:ABK_DIR+"/"+abkName(new Date()),data:JSON.stringify(await bkcWrap(backupObj())),directory:"DOCUMENTS",encoding:"utf8",recursive:true});
     o.lastAutoBk=now;window.abkDirty=false;ABK.err="";await saveKV("opt");
     const lim=new Date();lim.setDate(lim.getDate()-ABK_DAYS);const limS=abkName(lim);
     const L=await abkList();for(const n of L)if(n<limS){try{await FS.deleteFile({path:ABK_DIR+"/"+n,directory:"DOCUMENTS"})}catch(e){}}
@@ -3206,18 +3268,23 @@ function abkCard(){
   const o=state.kv.opt,last=o.lastAutoBk?new Date(o.lastAutoBk):null,lastBk=o.lastBk?new Date(o.lastBk):null;
   const when=d=>d?`${d.toLocaleDateString("it-IT")} alle ${pad(d.getHours())}:${pad(d.getMinutes())}`:"mai";
   if(!isNative())return `<div class="card"><h3>Backup</h3><p>Ultimo backup creato da qui: <b>${when(lastBk)}</b>.${!lastBk||Date.now()-o.lastBk>7*864e5?` <span class="over">Ti consiglio di farne uno: i dati sono solo su questo dispositivo.</span>`:""}</p>
-    <p class="note" style="margin-bottom:0">Nell'app Android il backup è automatico. Qui usa "Crea backup" qui sotto e conserva il file in una cartella sicura.</p></div>`;
+    <p class="note" style="margin-bottom:0">Nell'app Android il backup è automatico. Qui usa "Crea backup" qui sotto e conserva il file in una cartella sicura.</p></div>`+bkcCardHTML();
   return `<div class="card"><h3>Backup automatico</h3>
     <label class="pd-o" style="margin:0 0 8px"><input type="checkbox" id="abkon" ${abkOn()?"checked":""}> Ogni giorno, in automatico</label>
-    <p class="num" style="margin-top:0">Ultimo: <b>${when(last)}</b>${ABK.files?` · ${ABK.files.length} ${ABK.files.length===1?"file":"file"} in archivio`:""}<br>Cartella: <b>Documenti/DietDesk/Backup</b> (dal file manager: Memoria interna → Documents → DietDesk → Backup). Un file al giorno, quelli più vecchi di ${ABK_DAYS} giorni vengono cancellati.</p>
+    <p class="num" style="margin-top:0">Ultimo: <b>${when(last)}</b>${ABK.files?` · ${ABK.files.length} file in archivio`:""}<br>Cartella: <b>Documenti/DietDesk/Backup</b> (dal file manager: Memoria interna → Documents → DietDesk → Backup). Un file al giorno, quelli più vecchi di ${ABK_DAYS} giorni vengono cancellati.</p>
     ${ABK.err?`<p class="over">Backup non riuscito: ${esc(ABK.err)}</p>`:""}
-    <div class="actions"><button class="btn" id="abknow">Esegui ora</button></div>
-    <p class="note" style="margin-bottom:0">Per ripristinare: "Ripristina" qui sotto e scegli il file dalla cartella. I file restano anche se disinstalli l'app.</p></div>`}
+    <div class="actions"><button class="btn" id="abknow" ${bkcOn()?"":"disabled"}>Esegui ora</button></div>
+    <p class="note" style="margin-bottom:0">Per ripristinare: "Ripristina" qui sotto, scegli il file dalla cartella e, se richiesta, scrivi la passphrase. I file restano anche se disinstalli l'app.</p></div>`+bkcCardHTML()}
 function abkBind(){const c=$("#abkon");if(c)c.onchange=()=>{state.kv.opt.autoBk=c.checked;saveKV("opt");if(c.checked)autoBackup(true).then(rerender);else rerender()};
   const n=$("#abknow");if(n)n.onclick=async()=>{n.disabled=true;n.textContent="Backup…";await autoBackup(true);toast(ABK.err?"Backup non riuscito":"Backup salvato in Documenti/DietDesk/Backup");rerender()};
+  const k=$("#bkcset");if(k)k.onclick=bkcSheet;
+  if(!BKC.loaded&&!BKC._l){BKC._l=1;bkcLoad().then(()=>{if(state.sec==="backup")rerender()})}
   if(isNative()&&!ABK.files&&!ABK._l){ABK._l=1;abkList().then(L=>{ABK.files=L;if(state.tab==="dati"&&!state.paz&&!state.stima)rerender()})}}
-/* quando: all'avvio (se l'ultimo ha più di 24 ore), quando l'app va in secondo piano dopo delle modifiche */
-setTimeout(()=>{try{if(abkOn()&&Date.now()-(state.kv.opt.lastAutoBk||0)>864e5)autoBackup(true)}catch(e){}},6000);
+/* quando: all'avvio (se l'ultimo ha più di 24 ore), quando l'app va in secondo piano dopo delle modifiche.
+   Senza passphrase il backup è in pausa: un promemoria al giorno. */
+setTimeout(async()=>{try{await bkcLoad();if(!abkOn())return;
+  if(!bkcOn()){const o=state.kv.opt,t=new Date().toDateString();if(o.bkNag!==t){o.bkNag=t;saveKV("opt");toast("Backup automatico in pausa: imposta la passphrase in Impostazioni → Backup")}return}
+  if(Date.now()-(state.kv.opt.lastAutoBk||0)>864e5)autoBackup(true)}catch(e){}},6000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&window.abkDirty)autoBackup(false)});
 
 /* ═════════ guida al primo avvio (tutorial a passi) ═════════ */
@@ -3250,7 +3317,7 @@ const TOURS={
     {sel:"#view .seg",title:"Modelli riutilizzabili",text:"Preset di prescrizione, giornate tipo, pasti salvati e gruppi di alternative: li crei una volta e li riusi con tutti i pazienti.",btn:"Ho capito"}]},
   dati:{t:"Impostazioni",steps:[
     {sel:'[data-sec="sync"]',title:"Sincronizzazione",text:"Collega Google Drive per avere gli stessi dati su PC e telefono. I dati sono cifrati con una passphrase che conosci solo tu.",btn:"Avanti"},
-    {sel:'[data-sec="backup"]',title:"Backup",text:"Nell'app Android il backup è automatico ogni giorno; su PC e iPhone crea ogni tanto un backup da qui.",btn:"Avanti"},
+    {sel:'[data-sec="backup"]',title:"Backup",text:"Nell'app Android il backup è automatico ogni giorno, cifrato con una passphrase che scegli tu; su PC e iPhone crea ogni tanto un backup da qui.",btn:"Avanti"},
     {sel:'[data-sec="fb"]',title:"Feedback e assistenza",text:"Segnala un problema, proponi una funzione o chiedi aiuto: il messaggio arriva direttamente a chi sviluppa DietDesk.",btn:"Ho capito"}]}};
 function tourStart(k,force){if(TOUR.on||!TOURS[k]||(!force&&tourSeen(k)))return;TOUR.on=k;TOUR.i=0;TOUR.steps=TOURS[k].steps;tourShow()}
 function tourEnd(){clearInterval(TOUR.timer);document.querySelectorAll(".tour-spot,.tour-card").forEach(e=>e.remove());if(TOUR.on)tourMark(TOUR.on);TOUR.on=null}
