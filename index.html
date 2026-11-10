@@ -309,6 +309,9 @@ main{touch-action:pan-y}
 .tour-card p{margin:4px 0 10px;font-size:14.5px;line-height:1.45}.tour-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
 .tour-n{font-size:12px;color:var(--ink-3);font-weight:600}.tour-x{background:none;border:0;font-size:17px;color:var(--ink-2);padding:4px 6px;cursor:pointer}
 .tour-a{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap}.tour-a .btn{min-height:38px}.tour-do{font-size:13px;color:var(--ink-3);margin-right:auto}
+.mbt{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:4px 0 6px}.mbr{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-top:1px solid var(--line);font-size:14px}.mbr:first-child{border-top:0}
+.mbr small{display:block;color:var(--ink-3);font-size:12px}.mbr.off{color:var(--ink-3)}.mbr.off b{text-decoration:line-through;font-weight:500}.mbr.avg{background:var(--sunken);font-weight:650}
+.mbtee{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:4px}.mbtee b{font-size:22px}.mbtee small{color:var(--ink-3);width:100%}
 .sheet{position:relative;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .sheet>.menu,.sheet>.field,.sheet>.actions,.sheet>h2,.sheet>p{flex:none}
 .grabzone{flex:none;height:36px;margin:-8px -16px -4px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab}
@@ -591,7 +594,7 @@ function sanPaz(p){if(!p||typeof p!=="object")return p;
   if(p.data_nascita!=null)p.data_nascita=sDate(p.data_nascita);p.altezza=sNum(p.altezza);
   ["telefono","email","peso_obiettivo"].forEach(k=>{if(p[k]!=null)p[k]=sStr(p[k],200)});if(p.note!=null)p.note=sStr(p.note,20000);
   if(Array.isArray(p.prescrizioni))p.prescrizioni=keep(p.prescrizioni,p.prescrizioni.filter(r=>r&&typeof r==="object").map(r=>{r.id=sId(r.id);r.nome=sStr(r.nome,80);r.dal=sDate(r.dal);
-    ["kcal","pP","pL","pkg","fibra"].forEach(k=>{if(k in r)r[k]=sNum(r[k],k==="kcal"?1800:0)});
+    ["kcal","pP","pL","pkg","fibra"].forEach(k=>{if(k in r)r[k]=sNum(r[k],k==="kcal"?1800:0)});["laf","mbv"].forEach(k=>{if(r[k]!=null)r[k]=sNum(r[k])});if(r.mbm!=null&&!/^[a-z]{2,10}$/.test(String(r.mbm)))delete r.mbm;
     if(Array.isArray(r.split))r.split=keep(r.split,r.split.filter(Array.isArray).map(x=>{x[0]=sStr(x[0],80);x[1]=sNum(x[1],0);return x}));
     if(r.t&&typeof r.t==="object")for(const k in r.t)r.t[k]=sNum(r.t[k]);return r}));
   p.giorni=keep(p.giorni,sDays(p.giorni,false));if(p.diario!=null)p.diario=keep(p.diario,sDays(p.diario,true));
@@ -1034,6 +1037,63 @@ function optimizeMeal(p,d,m){
 
 /* ─── Prescrizione ─── */
 function selPr(p){return p.prescrizioni.find(x=>x.id===state.prSel)||R(p)}
+/* ═════════ metabolismo basale e fabbisogno energetico ═════════ */
+/* Formule per adulti (kcal/die). W peso kg, H altezza cm, A età anni, FFM massa magra kg. */
+const MB_F={
+  mifflin:{l:"Mifflin-St Jeor (1990)",f:(s,W,H,A)=>10*W+6.25*H-5*A+(s==="M"?5:-161),need:"WHA"},
+  hbr:{l:"Harris-Benedict rivista (Roza-Shizgal 1984)",f:(s,W,H,A)=>s==="M"?88.362+13.397*W+4.799*H-5.677*A:447.593+9.247*W+3.098*H-4.330*A,need:"WHA"},
+  hb:{l:"Harris-Benedict (1919)",f:(s,W,H,A)=>s==="M"?66.473+13.7516*W+5.0033*H-6.755*A:655.0955+9.5634*W+1.8496*H-4.6756*A,need:"WHA"},
+  henry:{l:"Oxford (Henry 2005)",f:(s,W,H,A)=>{const M=[[30,16.0,545],[60,14.2,593],[999,13.5,514]],F=[[30,13.1,558],[60,9.74,694],[999,10.1,569]];const r=(s==="M"?M:F).find(x=>A<x[0]);return r[1]*W+r[2]},need:"WA"},
+  schofield:{l:"Schofield (OMS 1985)",f:(s,W,H,A)=>{const M=[[30,15.057,692.2],[60,11.472,873.1],[999,11.711,587.7]],F=[[30,14.818,486.6],[60,8.126,845.6],[999,9.082,658.5]];const r=(s==="M"?M:F).find(x=>A<x[0]);return r[1]*W+r[2]},need:"WA"},
+  katch:{l:"Katch-McArdle (massa magra)",f:(s,W,H,A,FFM)=>370+21.6*FFM,need:"F"},
+  cunn:{l:"Cunningham (massa magra)",f:(s,W,H,A,FFM)=>500+22*FFM,need:"F"}};
+const LAF_P=[[1.45,"Sedentario"],[1.6,"Moderatamente attivo"],[1.75,"Attivo"],[2.1,"Molto attivo"]];
+/* dati del paziente: ultima visita per peso e composizione corporea */
+function mbData(p){const v=lastVisit(p)||{},W=pesoRef(p),H=p.altezza||v.altezza,A=ageN(p.data_nascita),b=v.bia||{};
+  let FFM=null,src="";if(b.mm>0){FFM=+b.mm;src="BIA"}else if(b.mg>0&&W){FFM=W*(1-b.mg/100);src="BIA (da % massa grassa)"}
+  else{const c=v.peso?visitCalc(p,v):{};if(c.mgPl>0&&W){FFM=W*(1-c.mgPl/100);src="pliche"}}
+  return{W,H,A,s:p.sesso==="M"?"M":"F",FFM,ffmSrc:src,bia:b.mb>0?+b.mb:null,bmi:W&&H?W/((H/100)**2):null}}
+/* formule calcolabili e quali sono adatte al caso */
+function mbCalc(p){const d=mbData(p),out=[];
+  if(d.A!=null&&d.A<18)return{d,rows:[],avg:null,note:"Le formule qui sono per adulti: sotto i 18 anni usa i valori dei LARN per età e sesso."};
+  for(const [k,F] of Object.entries(MB_F)){const ok=F.need==="F"?!!d.FFM:(F.need.includes("W")?!!d.W:true)&&(F.need.includes("H")?!!d.H:true)&&(F.need.includes("A")?d.A!=null:true);
+    if(!ok)continue;const v=F.f(d.s,d.W,d.H,d.A,d.FFM);let use=true,why="";
+    if(d.bmi>=30&&(k==="hb"||k==="hbr")){use=false;why="tende a sovrastimare nell'obesità"}
+    else if(d.bmi>=30&&k==="schofield"){use=false;why="sovrastima nell'obesità"}
+    else if(k==="hb"){use=false;why="sostituita dalla versione rivista"}
+    out.push({k,l:F.l,v,use,why})}
+  const U=out.filter(x=>x.use),avg=U.length?U.reduce((s,x)=>s+x.v,0)/U.length:null;
+  let note="";if(d.bmi>=30)note="Con BMI ≥30 la media usa Mifflin-St Jeor, Oxford e, se c'è la massa magra, Katch-McArdle e Cunningham.";
+  else if(d.bmi&&d.bmi<18.5)note="Con BMI <18,5 (per esempio nei DCA) tutte le formule possono sovrastimare il basale: se possibile usa un valore misurato (calorimetria) o la BIA.";
+  return{d,rows:out,avg,note}}
+function mbChosen(p,r,C){const m=r.mbm||"media";
+  if(m==="manuale")return r.mbv>0?{v:+r.mbv,l:"valore inserito"}:null;
+  if(m==="bia")return C.d.bia?{v:C.d.bia,l:"BIA"}:null;
+  if(m==="media")return C.avg?{v:C.avg,l:"media delle formule adatte"}:null;
+  const x=C.rows.find(z=>z.k===m);return x?{v:x.v,l:x.l}:null}
+function mbCardHTML(p,r){const C=mbCalc(p),d=C.d,ch=mbChosen(p,r,C),laf=r.laf||1.45,lafP=LAF_P.some(x=>x[0]===laf);
+  const miss=[!d.W&&"peso",!d.H&&"altezza",d.A==null&&"data di nascita"].filter(Boolean);
+  const opts=[["media","Media delle formule adatte"],...C.rows.map(x=>[x.k,x.l]),...(d.bia?[["bia","Misurato con BIA"]]:[]),["manuale","Valore inserito a mano"]];
+  const tee=ch?ch.v*laf:null,goals=[[-20,"−20%"],[-15,"−15%"],[-10,"−10%"],[0,"Mantenimento"],[10,"+10%"]];
+  return `<div class="card"><h3>Metabolismo basale e fabbisogno</h3>
+   ${miss.length?`<p class="note over" style="margin-top:0">Per le formule mancano: ${miss.join(", ")}. Inseriscili nei dati del paziente.</p>`:""}
+   ${C.rows.length?`<div class="mbt">${C.rows.map(x=>`<div class="mbr${x.use?"":" off"}"><span>${esc(x.l)}${x.use?"":`<small>esclusa dalla media: ${esc(x.why)}</small>`}</span><b class="num">${fmt(x.v)}kcal</b></div>`).join("")}
+     ${C.avg?`<div class="mbr avg"><span>Media delle formule adatte</span><b class="num">${fmt(C.avg)}kcal</b></div>`:""}${d.bia?`<div class="mbr"><span>Misurato con BIA</span><b class="num">${fmt(d.bia)}kcal</b></div>`:""}</div>
+     <p class="note">${esc([`${fmt(d.W,1)}kg, ${fmt(d.H)}cm, ${d.A} anni${d.bmi?`, BMI ${fmt(d.bmi,1)}`:""}`,d.FFM?`massa magra ${fmt(d.FFM,1)}kg (${d.ffmSrc})`:"",C.note].filter(Boolean).join(" · "))}</p>`:C.note?`<p class="note">${esc(C.note)}</p>`:""}
+   <div class="field"><label for="mbm">Metabolismo basale</label><select id="mbm">${opts.map(([k,l])=>`<option value="${k}"${(r.mbm||"media")===k?" selected":""}>${esc(l)}</option>`).join("")}</select></div>
+   <div class="field"><label for="lafs">Livello di attività (LAF, valori LARN)</label><select id="lafs">${LAF_P.map(([f,l])=>`<option value="${f}"${laf===f?" selected":""}>${l} · ${String(f).replace(".",",")}</option>`).join("")}<option value="man"${lafP?"":" selected"}>Inserito a mano</option></select></div>
+   <div class="grid2"><div class="field"><label for="mbv">${(r.mbm||"media")==="manuale"?"Valore (kcal)":"Basale scelto"}</label><input id="mbv" inputmode="numeric" ${(r.mbm||"media")==="manuale"?`value="${r.mbv||""}" placeholder="Es. 1450"`:`value="${ch?fmt(ch.v):"—"}" disabled`}></div><div class="field"><label for="lafv">LAF</label><input id="lafv" inputmode="decimal" value="${String(laf).replace(".",",")}" ${lafP?"disabled":""}></div></div>
+   ${tee?`<div class="mbtee"><span>Fabbisogno stimato</span><b class="num">${fmt(tee)}kcal</b><small class="num">${fmt(ch.v)} × ${String(laf).replace(".",",")} · ${esc(ch.l)}</small></div>
+     <div class="label" style="margin:10px 0 6px">Imposta l'energia della prescrizione</div>
+     <div class="quick">${goals.map(([g,l])=>{const k=Math.round(tee*(1+g/100)/50)*50;return `<button class="pill" data-tee="${k}">${l} → ${fmt(k)}kcal</button>`}).join("")}</div>`:`<p class="note">Scegli il basale (o inseriscilo a mano) per calcolare il fabbisogno.</p>`}
+  </div>`}
+function mbBind(p,r,v,save){const on=(id,fn)=>{const e=v.querySelector(id);if(e)e.onchange=fn};
+  on("#mbm",e=>{r.mbm=e.target.value;save()});
+  on("#mbv",e=>{const x=num(e.target.value);if(x>400&&x<6000){r.mbv=Math.round(x);save()}else toast("Inserisci un valore tra 400 e 6000kcal")});
+  on("#lafs",e=>{if(e.target.value==="man"){r.laf=r.laf&&!LAF_P.some(x=>x[0]===r.laf)?r.laf:1.5}else r.laf=+e.target.value;save()});
+  on("#lafv",e=>{const x=num(e.target.value);if(x>=1&&x<=3){r.laf=Math.round(x*100)/100;save()}else toast("LAF tra 1,0 e 3,0")});
+  v.querySelectorAll("[data-tee]").forEach(b=>b.onclick=()=>{r.kcal=+b.dataset.tee;save();toast("Energia impostata a "+fmt(r.kcal)+"kcal")})}
+
 function prescrHTML(p){
   const r=selPr(p),t=targets(p,r),cur=R(p),nDays=p.giorni.filter(g=>R(p,g)===r).length,w=pesoRef(p),a=ageN(p.data_nascita),h=p.altezza||(lastVisit(p)||{}).altezza;
   const sumSplit=r.split.reduce((s,x)=>s+(+x[1]||0),0);
@@ -1057,9 +1117,8 @@ function prescrHTML(p){
    <div class="kv num"><div><span>Proteine</span><b>${fmt(t.PROTEINE)}g</b><span>${fmt(t.pP,1)}%${t.gkg?" · "+fmt(t.gkg,2)+"g/kg":""}</span></div><div><span>Lipidi</span><b>${fmt(t.LIPIDI)}g</b><span>${fmt(t.pL,1)}%</span></div><div><span>Glucidi</span><b>${fmt(t.GLUCIDI)}g</b><span>${fmt(t.pG,1)}%</span></div><div><span>Fibra</span><b>${fmt(t.FIBRA)}g</b><span>${fmt(t.FIBRA/r.kcal*1000,1)}g/1000kcal</span></div></div>
    ${t.pG<40?`<p class="note over">Glucidi sotto il 40% delle kcal: controlla proteine e lipidi.</p>`:""}
    <p class="note">Fattori di conversione: proteine 4kcal/g, lipidi 9kcal/g, glucidi 3,75kcal/g.</p>
-   ${bmr||bia.mb?`<details class="more"><summary>Stima del fabbisogno</summary>${bmr?`<div class="note" style="margin-top:4px">Metabolismo basale Mifflin-St Jeor: <b class="num">${fmt(bmr)}kcal</b> · ${fmt(w,1)}kg, ${fmt(h)}cm, ${a} anni</div>`:""}${bia.mb?`<div class="note">Metabolismo basale da BIA: <b class="num">${fmt(bia.mb)}kcal</b></div>`:""}
-    <div class="quick">${[[1.4,"Sedentario"],[1.6,"Leggero"],[1.75,"Moderato"],[1.9,"Intenso"]].map(([f,l])=>{const k=Math.round((bia.mb||bmr)*f/50)*50;return `<button class="pill" data-laf="${k}">${l} ×${String(f).replace(".",",")} → ${fmt(k)}kcal</button>`}).join("")}</div><div class="note">Tocca un livello di attività per impostare l'energia. Base: ${bia.mb?"BIA":"Mifflin-St Jeor"}.</div></details>`:`<p class="note">Per stimare il fabbisogno servono data di nascita, altezza e una visita con il peso.</p>`}
   </div>
+  ${mbCardHTML(p,r)}
   <div class="card"><div class="head"><h3>Suddivisione calorica dei pasti</h3></div>
    <div class="quick" style="margin-top:0">${[3,4,5,6].map(n=>`<button class="pill" data-ns="${n}" aria-pressed="${r.split.length===n}">${n} pasti</button>`).join("")}</div>
    ${r.split.map((x,i)=>`<div class="splitrow"><input data-sn="${i}" value="${esc(x[0])}" aria-label="Nome pasto"><input data-sp="${i}" inputmode="decimal" value="${x[1]}" aria-label="Percentuale ${esc(x[0])}" style="text-align:right"><span class="kc num">${fmt(r.kcal*x[1]/100)}kcal</span></div>`).join("")}
@@ -1090,7 +1149,7 @@ function bindPrescr(p){
   on("#rp",e=>{const x=num(e.target.value);if(x==null)return;if(r.pkg)r.pkg=x;else r.pP=x;save()});
   on("#rpw",e=>{const x=num(e.target.value);if(setPesoOggi(p,x)){save();toast("Peso registrato come misura di oggi")}else toast("Peso non valido")});
   on("#rl",e=>{const x=num(e.target.value);if(x!=null){r.pL=x;save()}});
-  v.querySelectorAll("[data-laf]").forEach(b=>b.onclick=()=>{r.kcal=+b.dataset.laf;save();toast("Energia impostata a "+r.kcal+"kcal")});
+  mbBind(p,r,v,save);
   v.querySelectorAll("[data-ns]").forEach(b=>b.onclick=()=>{r.split=SPLITS[+b.dataset.ns].map(x=>x.slice());save()});
   v.querySelectorAll("[data-sn]").forEach(e=>e.onchange=()=>{const old=r.split[+e.dataset.sn][0],nw=e.value.trim()||old;r.split[+e.dataset.sn][0]=nw;p.giorni.forEach(g=>{if(R(p,g)===r)g.pasti.forEach(m=>{if(m.nome===old)m.nome=nw})});save()});
   v.querySelectorAll("[data-sp]").forEach(e=>e.onchange=()=>{const x=num(e.value);if(x!=null){r.split[+e.dataset.sp][1]=x;save()}});
@@ -3087,7 +3146,7 @@ async function nativeOpen(url){try{const r=await window.Capacitor.Plugins.Filesy
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="0.21.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="0.22.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
