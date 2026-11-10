@@ -304,6 +304,11 @@ main{touch-action:pan-y}
 @media (pointer:coarse){.sheet .sheetx{display:none}}
 .row .chev{font-size:22px;color:var(--ink-3);padding-left:8px}
 .menu button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:-2px}
+.tour-spot{position:fixed;z-index:58;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);outline:2px solid #fff;pointer-events:none;transition:left .2s,top .2s,width .2s,height .2s}
+.tour-card{position:fixed;z-index:59;background:var(--bg);color:var(--ink);border-radius:16px;padding:12px 14px;box-shadow:0 10px 36px rgba(0,0,0,.35);transition:top .2s,left .2s}
+.tour-card p{margin:4px 0 10px;font-size:14.5px;line-height:1.45}.tour-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.tour-n{font-size:12px;color:var(--ink-3);font-weight:600}.tour-x{background:none;border:0;font-size:17px;color:var(--ink-2);padding:4px 6px;cursor:pointer}
+.tour-a{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap}.tour-a .btn{min-height:38px}.tour-do{font-size:13px;color:var(--ink-3);margin-right:auto}
 .sheet{position:relative;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .sheet>.menu,.sheet>.field,.sheet>.actions,.sheet>h2,.sheet>p{flex:none}
 .grabzone{flex:none;height:36px;margin:-8px -16px -4px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab}
@@ -700,6 +705,9 @@ function totals(voci){const t={};COLS.forEach(c=>t[c]=0);voci.forEach(v=>{const 
 const dayVoci=d=>d.pasti.flatMap(p=>p.voci);
 function sortPasti(d,p){const order=(p&&p.prescrizioni?R(p,d).split.map(x=>x[0]):[]).concat(MEAL_NAMES);d.pasti.sort((a,b)=>{const ia=order.indexOf(a.nome),ib=order.indexOf(b.nome);return(ia<0?99:ia)-(ib<0?99:ib)})}
 function lastVisit(p){return (p.visite||[]).slice().sort((a,b)=>dkey(b.data)-dkey(a.data))[0]||null}
+/* peso di oggi: aggiorna la misura di oggi o ne crea una, così grafico e prescrizione restano coerenti */
+function setPesoOggi(p,x){if(!(x>20&&x<400))return false;p.visite=p.visite||[];const v=p.visite.find(z=>z.data===today());
+  if(v)v.peso=x;else p.visite.push({id:uid(),data:today(),altezza:p.altezza||null,peso:x,bia:{},pliche:{}});return true}
 function pesoRef(p){const v=(p.visite||[]).filter(x=>x.peso).sort((a,b)=>dkey(b.data)-dkey(a.data))[0];return v?v.peso:null}
 function migrate(p){
   if(!p.visite)p.visite=[];
@@ -774,13 +782,15 @@ function editAnagrafica(p){
    <div class="grid2"><div class="field"><label for="pd">Data di nascita</label><input id="pd" placeholder="gg/mm/aaaa" inputmode="numeric" value="${esc(p.data_nascita)}"></div>
    <div class="field"><label for="ps">Sesso</label><select id="ps"><option value="F"${p.sesso==="F"?" selected":""}>F</option><option value="M"${p.sesso==="M"?" selected":""}>M</option></select></div></div>
    <div class="grid2"><div class="field"><label for="ph">Altezza (cm)</label><input id="ph" inputmode="decimal" value="${p.altezza??""}"></div>
-   <div class="field"><label for="po">Peso obiettivo</label><input id="po" value="${esc(p.peso_obiettivo)}" placeholder="Es. 75kg"></div></div>
+   <div class="field"><label for="pw">Peso attuale (kg)</label><input id="pw" inputmode="decimal" value="${pesoRef(p)??""}"><span class="hint">Viene registrato come misura di oggi</span></div></div>
+   <div class="field"><label for="po">Peso obiettivo</label><input id="po" value="${esc(p.peso_obiettivo)}" placeholder="Es. 75kg"></div>
    <div class="grid2"><div class="field"><label for="pt">Telefono</label><input id="pt" inputmode="tel" value="${esc(p.telefono)}"></div>
    <div class="field"><label for="pe">Email</label><input id="pe" inputmode="email" value="${esc(p.email)}"></div></div>
    <div class="field"><label for="pno">Note cliniche</label><textarea id="pno">${esc(p.note)}</textarea></div>
    <div class="actions"><button type="button" class="btn" data-close>Annulla</button><button class="btn primary">Salva</button></div></form>`,s=>{
    s.querySelector("#pf").onsubmit=async e=>{e.preventDefault();const n=s.querySelector("#pn").value.trim();if(!n)return;
      const d=s.querySelector("#pd").value.trim();if(d&&!DRE.test(d))return toast("Scrivi la data di nascita come gg/mm/aaaa");
+     const pw=num(s.querySelector("#pw").value);if(pw!=null&&!(pw>20&&pw<400))return toast("Peso non valido");if(pw!=null&&pw!==pesoRef(p))setPesoOggi(p,pw);
      Object.assign(p,{nome:n,data_nascita:d,sesso:s.querySelector("#ps").value,altezza:num(s.querySelector("#ph").value),telefono:s.querySelector("#pt").value.trim(),email:s.querySelector("#pe").value.trim(),peso_obiettivo:s.querySelector("#po").value.trim(),note:s.querySelector("#pno").value});
      await savePaz(p);closeSheet();if(isNew){openPaz(p,"prescr");toast("Imposta ora la prescrizione")}else rerender()}});
 }
@@ -1040,7 +1050,8 @@ function prescrHTML(p){
    <div class="grid2"><div class="field"><label for="rk">Energia (kcal/die)</label><input id="rk" inputmode="numeric" value="${r.kcal}"></div>
    <div class="field"><label for="rf">Fibra (g/die)</label><input id="rf" inputmode="decimal" value="${r.fibra}"></div></div>
    <div class="grid2"><div class="field"><label for="rpm">Proteine come</label><select id="rpm"><option value="pct"${r.pkg?"":" selected"}>% delle kcal</option><option value="gkg"${r.pkg?" selected":""}>g per kg di peso</option></select></div>
-   <div class="field"><label for="rp">${r.pkg?"Proteine (g/kg)":"Proteine (% kcal)"}</label><input id="rp" inputmode="decimal" value="${r.pkg||r.pP}">${r.pkg&&!w?`<span class="hint over">Serve una visita con il peso: per ora uso il 18% delle kcal</span>`:r.pkg?`<span class="hint">Peso di riferimento ${fmt(w,1)}kg (ultima visita)</span>`:""}</div></div>
+   <div class="field"><label for="rp">${r.pkg?"Proteine (g/kg)":"Proteine (% kcal)"}</label><input id="rp" inputmode="decimal" value="${r.pkg||r.pP}">${r.pkg&&!w?`<span class="hint over">Serve il peso del paziente: inseriscilo qui sotto</span>`:r.pkg?`<span class="hint">Peso di riferimento ${fmt(w,1)}kg (ultima visita)</span>`:""}</div></div>
+   ${r.pkg&&!w?`<div class="field"><label for="rpw">Peso attuale (kg)</label><input id="rpw" inputmode="decimal" placeholder="Es. 72,5"></div>`:""}
    <div class="grid2"><div class="field"><label for="rl">Lipidi (% kcal)</label><input id="rl" inputmode="decimal" value="${r.pL}"></div>
    <div class="field"><label>Glucidi (% kcal)</label><input disabled value="${fmt(t.pG,1)}"><span class="hint">Calcolati per differenza</span></div></div>
    <div class="kv num"><div><span>Proteine</span><b>${fmt(t.PROTEINE)}g</b><span>${fmt(t.pP,1)}%${t.gkg?" · "+fmt(t.gkg,2)+"g/kg":""}</span></div><div><span>Lipidi</span><b>${fmt(t.LIPIDI)}g</b><span>${fmt(t.pL,1)}%</span></div><div><span>Glucidi</span><b>${fmt(t.GLUCIDI)}g</b><span>${fmt(t.pG,1)}%</span></div><div><span>Fibra</span><b>${fmt(t.FIBRA)}g</b><span>${fmt(t.FIBRA/r.kcal*1000,1)}g/1000kcal</span></div></div>
@@ -1077,6 +1088,7 @@ function bindPrescr(p){
   on("#rf",e=>{const x=num(e.target.value);if(x!=null){r.fibra=x;save()}});
   on("#rpm",e=>{if(e.target.value==="gkg")r.pkg=r.pkg||1.2;else{r.pP=r.pP||Math.round(targets(p,r).pP);r.pkg=0}save()});
   on("#rp",e=>{const x=num(e.target.value);if(x==null)return;if(r.pkg)r.pkg=x;else r.pP=x;save()});
+  on("#rpw",e=>{const x=num(e.target.value);if(setPesoOggi(p,x)){save();toast("Peso registrato come misura di oggi")}else toast("Peso non valido")});
   on("#rl",e=>{const x=num(e.target.value);if(x!=null){r.pL=x;save()}});
   v.querySelectorAll("[data-laf]").forEach(b=>b.onclick=()=>{r.kcal=+b.dataset.laf;save();toast("Energia impostata a "+r.kcal+"kcal")});
   v.querySelectorAll("[data-ns]").forEach(b=>b.onclick=()=>{r.split=SPLITS[+b.dataset.ns].map(x=>x.slice());save()});
@@ -2701,9 +2713,9 @@ function secList(){const o=state.kv.opt,L=[];
   L.push(["asp","Aspetto","Tema chiaro o scuro, colore principale"]);
   L.push(["arch","Archivio",`${state.pazienti.length} pazienti · ${FOODS.length} alimenti`]);
   L.push(["fb","Feedback e assistenza","Segnala un problema, suggerisci una funzione, chiedi aiuto"]);
-  L.push(["info","Informazioni e privacy",`DietDesk ${APP_VER}`]);
+  L.push(["info","Informazioni e guida",`DietDesk ${APP_VER} · rivedi la guida, privacy`]);
   return L}
-const SEC_T=Object.fromEntries([["agg","Aggiornamenti"],["sync","Sincronizzazione"],["backup","Backup"],["imp","Importa file"],["asp","Aspetto"],["arch","Archivio"],["fb","Feedback e assistenza"],["info","Informazioni e privacy"]]);
+const SEC_T=Object.fromEntries([["agg","Aggiornamenti"],["sync","Sincronizzazione"],["backup","Backup"],["imp","Importa file"],["asp","Aspetto"],["arch","Archivio"],["fb","Feedback e assistenza"],["info","Informazioni e guida"]]);
 function viewDati(){
   const k=state.sec;
   if(!k){setBar(`<h1>Impostazioni</h1>`);
@@ -2727,7 +2739,7 @@ function viewDati(){
      <p style="margin:0">I dati restano su questo dispositivo${syncOn()?" e, cifrati, sul tuo Google Drive":""}.${state.persist?"":" <b class=\"over\">Archivio non disponibile in questa sessione.</b>"}</p></div>
      <div class="note">Valori nutrizionali per 100g di parte edibile. Fonte principale: tabelle CREA (alimentinutrizione.it); SNO: schede tecniche dei produttori.</div>`;
   if(k==="fb")h=fbCard();
-  if(k==="info")h=`<div class="card"><h3>DietDesk ${APP_VER}</h3><p>Piani dietetici per dietisti e nutrizionisti: pazienti, diete con alternative, prescrizioni, visite, diario alimentare, stima degli apporti e confronto con i LARN.</p>
+  if(k==="info")h=tourMenu()+`<div class="card"><h3>DietDesk ${APP_VER}</h3><p>Piani dietetici per dietisti e nutrizionisti: pazienti, diete con alternative, prescrizioni, visite, diario alimentare, stima degli apporti e confronto con i LARN.</p>
      <div class="actions" style="flex-wrap:wrap"><a class="btn" href="https://dietdesk.github.io/info.html" target="_blank" rel="noopener">Sito</a><a class="btn" href="https://dietdesk.github.io/privacy.html" target="_blank" rel="noopener">Informativa privacy</a></div></div>
      <div class="card"><h3>I tuoi dati</h3><p style="margin:0">DietDesk non ha un server e non raccoglie dati: tutto resta sul dispositivo. Con la sincronizzazione una copia cifrata va nel <b>tuo</b> Google Drive. Il modulo di feedback invia solo quello che scrivi tu, più versione dell'app e tipo di dispositivo.</p></div>`;
   $("#view").innerHTML=W(h);
@@ -2737,7 +2749,7 @@ function viewDati(){
     $("#view").querySelectorAll("[data-tc]").forEach(b=>b.onclick=()=>{setTheme({...getTheme(),color:b.dataset.tc});rerender()})}
   if(k==="sync"){const sb=$("#syset");if(sb)sb.onclick=syncSetup;const sn=$("#synow");if(sn)sn.onclick=()=>{toast("Sincronizzazione…");syncNow().then(()=>{rerender();toast(SY.status==="err"?"Sincronizzazione non riuscita: "+SY.err:"Sincronizzato")})};
     const so=$("#syoff");if(so)so.onclick=syncDisconnect;const gr=$("#gdre");if(gr)gr.onclick=gdReconnect}
-  if(k==="fb")fbBind();
+  if(k==="fb")fbBind();if(k==="info")tourBindMenu();
 }
 /* ─── feedback e assistenza (modulo Google) ─── */
 const fbDev=()=>{const u=navigator.userAgent,os=/Android/i.test(u)?"Android":/iPhone|iPad/i.test(u)?"iOS":/Windows/i.test(u)?"Windows":/Mac/i.test(u)?"macOS":"altro";
@@ -2759,7 +2771,7 @@ function fbBind(){const f=$("#fbf");if(!f)return;let t=fbDraft().t||0;
   f.onsubmit=async e=>{e.preventDefault();const m=$("#fbm").value.trim(),em=$("#fbe").value.trim(),inc=$("#fbv").checked;
     if(m.length<5)return toast("Scrivi il messaggio");if(em&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return toast("Email non valida");
     const b=$("#fbs");b.disabled=true;b.textContent="Invio…";
-    const body=new URLSearchParams();body.append(FB.tipo,FB_TIPI[t]);body.append(FB.msg,m.slice(0,8000));if(em)body.append(FB.email,em);if(inc){body.append(FB.ver,APP_VER);body.append(FB.dev,fbDev())}
+    const body=new URLSearchParams();body.append(FB.tipo,FB_TIPI[t]);body.append(FB.msg,m.slice(0,8000));body.append(FB.email,em||"non indicata");body.append(FB.ver,inc?APP_VER:"non indicata");body.append(FB.dev,inc?fbDev():"non indicato")
     try{await fetch(FB.url,{method:"POST",mode:"no-cors",body});try{localStorage.removeItem("dd_fb")}catch(x){}
       $("#view").innerHTML=W(`<div class="card"><h3>Grazie!</h3><p style="margin:0">Messaggio inviato.${em?" Ti risponderemo all'indirizzo che hai indicato.":""}</p></div>`)}
     catch(x){b.disabled=false;b.textContent="Invia";toast("Non inviato: controlla la connessione e riprova. Il testo resta salvato.")}}}
@@ -3075,7 +3087,7 @@ async function nativeOpen(url){try{const r=await window.Capacitor.Plugins.Filesy
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="0.20.1"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="0.21.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
@@ -3146,6 +3158,83 @@ function abkBind(){const c=$("#abkon");if(c)c.onchange=()=>{state.kv.opt.autoBk=
 /* quando: all'avvio (se l'ultimo ha più di 24 ore), quando l'app va in secondo piano dopo delle modifiche */
 setTimeout(()=>{try{if(abkOn()&&Date.now()-(state.kv.opt.lastAutoBk||0)>864e5)autoBackup(true)}catch(e){}},6000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&window.abkDirty)autoBackup(false)});
+
+/* ═════════ guida al primo avvio (tutorial a passi) ═════════ */
+/* Ogni passo evidenzia un elemento vero dell'app. Si va avanti facendo l'azione indicata (o con "Avanti"),
+   si salta un passo con → e si chiude tutto con ✕. Lo sfondo resta utilizzabile. */
+const TOUR={on:null,i:0,steps:null,timer:null,last:""};
+const tourSeen=k=>!!((state.kv.opt.tour||{})[k]);
+function tourMark(k){const o=state.kv.opt;o.tour=o.tour||{};o.tour[k]=1;saveKV("opt")}
+const curDay=()=>state.paz&&state.paz.giorni[Math.min(state.day,state.paz.giorni.length-1)];
+const TOURS={
+  main:{t:"Primi passi",steps:[
+    {title:"Benvenuto in DietDesk",text:"Ti mostro in un minuto come creare un paziente e la sua prima dieta. Puoi fare tu ogni passaggio, saltarlo con → o chiudere la guida con ✕.",btn:"Inizia",
+      before:()=>{if(state.paz||state.stima||state.sec||state.tab!=="pazienti"){state.paz=null;state.stima=null;state.sec=null;state.tab="pazienti";render()}}},
+    {sel:".fab",title:"Crea un paziente",text:"Tocca + Paziente.",until:()=>!!document.querySelector("#pf")||!!state.paz},
+    {sel:"#pf #pn",title:"Dati del paziente",text:"Bastano nome, data di nascita e sesso: il resto puoi completarlo dopo. Poi tocca Salva in fondo.",until:()=>!!state.paz},
+    {sel:".pseg",title:"Le schede del paziente",text:"Dieta: i giorni del piano. Diario: cosa ha mangiato davvero. Prescrizione: kcal, macronutrienti e quote dei pasti. Paziente: visite, misure e andamento del peso.",btn:"Avanti"},
+    {sel:'[data-pt="prescr"]',title:"La prescrizione",text:"In Prescrizione imposti kcal e percentuali dei macronutrienti, oppure applichi un preset salvato: da lì si calcolano gli obiettivi di ogni pasto.",btn:"Avanti"},
+    {sel:'[data-pt="dieta"]',title:"Torna alla dieta",text:"Ora tocca Dieta.",until:()=>state.paz&&state.ptab==="dieta"},
+    {sel:".fab",title:"Aggiungi un giorno",text:"Tocca + Giorno: puoi partire da un giorno vuoto, da una giornata tipo o da una copia di un altro giorno.",until:()=>!!(state.paz&&state.paz.giorni.length)},
+    {sel:".meals .addbtn",title:"Aggiungi gli alimenti",text:"In ogni pasto tocca Aggiungi alimento, cerca e scrivi i grammi (a crudo, al netto degli scarti). Totali, macronutrienti e quote dei pasti si aggiornano subito.",until:()=>{const d=curDay();return !!(d&&dayVoci(d).length)}},
+    {sel:".meals .item",title:"Grammi e alternative",text:"Tocca un alimento per cambiare i grammi o aggiungere le alternative: le grammature equivalenti si calcolano da sole.",btn:"Avanti"},
+    {sel:"#pm",title:"Stampa e altro",text:"Dal menu ⋮ trovi la stampa (settimanale, giorno per giorno o a porzioni), la lista della spesa, le alternative standard e l'esportazione per Progetto Dieta.",btn:"Avanti"},
+    {title:"Ecco fatto",text:"Le altre sezioni hanno una breve guida alla prima apertura. Puoi rivedere tutte le guide da Impostazioni → Informazioni e guida.",btn:"Fine"}]},
+  stime:{t:"Stima apporti",steps:[
+    {sel:".fab",title:"Stima degli apporti",text:"Calcola kcal, macronutrienti, micronutrienti e confronto LARN di un richiamo o di un diario, senza creare un paziente. Tocca + Stima per iniziare; sesso, età e peso sono facoltativi.",btn:"Ho capito"}]},
+  alimenti:{t:"Alimenti",steps:[
+    {sel:"#view .search,#view input[type=search]",title:"Archivio alimenti",text:"Cerca tra alimenti CREA, personali, SNO e ricette. I filtri restringono la ricerca; tocca un alimento per vederne tutti i nutrienti.",btn:"Avanti"},
+    {sel:".fab",title:"Nuovi alimenti e ricette",text:"Con + Nuovo aggiungi un alimento dall'etichetta o una ricetta: i valori della ricetta si calcolano dagli ingredienti.",btn:"Ho capito"}]},
+  modelli:{t:"Modelli",steps:[
+    {sel:"#view .seg",title:"Modelli riutilizzabili",text:"Preset di prescrizione, giornate tipo, pasti salvati e gruppi di alternative: li crei una volta e li riusi con tutti i pazienti.",btn:"Ho capito"}]},
+  dati:{t:"Impostazioni",steps:[
+    {sel:'[data-sec="sync"]',title:"Sincronizzazione",text:"Collega Google Drive per avere gli stessi dati su PC e telefono. I dati sono cifrati con una passphrase che conosci solo tu.",btn:"Avanti"},
+    {sel:'[data-sec="backup"]',title:"Backup",text:"Nell'app Android il backup è automatico ogni giorno; su PC e iPhone crea ogni tanto un backup da qui.",btn:"Avanti"},
+    {sel:'[data-sec="fb"]',title:"Feedback e assistenza",text:"Segnala un problema, proponi una funzione o chiedi aiuto: il messaggio arriva direttamente a chi sviluppa DietDesk.",btn:"Ho capito"}]}};
+function tourStart(k,force){if(TOUR.on||!TOURS[k]||(!force&&tourSeen(k)))return;TOUR.on=k;TOUR.i=0;TOUR.steps=TOURS[k].steps;tourShow()}
+function tourEnd(){clearInterval(TOUR.timer);document.querySelectorAll(".tour-spot,.tour-card").forEach(e=>e.remove());if(TOUR.on)tourMark(TOUR.on);TOUR.on=null}
+function tourNext(){TOUR.i++;if(TOUR.i>=TOUR.steps.length)return tourEnd();tourShow()}
+const tourEl=s=>{if(!s.sel)return null;for(const el of document.querySelectorAll(s.sel)){const r=el.getBoundingClientRect();if(r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight)return el}return null};
+function tourShow(){
+  clearInterval(TOUR.timer);document.querySelectorAll(".tour-spot,.tour-card").forEach(e=>e.remove());
+  const s=TOUR.steps[TOUR.i];if(s.before)s.before();
+  if(s.until&&s.until())return tourNext();
+  const spot=document.createElement("div");spot.className="tour-spot";
+  const card=document.createElement("div");card.className="tour-card";card.setAttribute("role","dialog");card.setAttribute("aria-label",s.title);
+  const n=TOUR.steps.length;
+  card.innerHTML=`<div class="tour-h"><span class="tour-n">${TOUR.i+1} / ${n}</span><button type="button" class="tour-x" aria-label="Chiudi la guida">✕</button></div>
+    <b>${esc(s.title)}</b><p>${esc(s.text)}</p>
+    <div class="tour-a">${s.until?`<span class="tour-do">Fai tu il passaggio, oppure</span><button type="button" class="btn tour-skip" aria-label="Salta questo passaggio">Salta →</button>`:`${TOUR.i<n-1?`<button type="button" class="btn tour-skip" aria-label="Salta questo passaggio">→</button>`:""}<button type="button" class="btn primary tour-ok">${esc(s.btn||"Avanti")}</button>`}</div>`;
+  card.querySelector(".tour-x").onclick=tourEnd;card.querySelectorAll(".tour-skip,.tour-ok").forEach(b=>b.onclick=tourNext);
+  document.body.append(spot,card);
+  const place=()=>{const el=tourEl(s),W0=innerWidth,H0=innerHeight,cw=Math.min(360,W0-24);card.style.width=cw+"px";
+    let key="none";
+    if(el){const r=el.getBoundingClientRect(),p=6;key=[r.left,r.top,r.width,r.height].map(Math.round).join(",");
+      if(key===TOUR.last&&card.style.top)return;TOUR.last=key;
+      Object.assign(spot.style,{left:r.left-p+"px",top:r.top-p+"px",width:r.width+2*p+"px",height:r.height+2*p+"px",opacity:1});
+      const ch=card.offsetHeight||170,below=r.bottom+p+12,above=r.top-p-12-ch;
+      const top=below+ch<H0-8?below:above>8?above:Math.max(8,H0-ch-8);
+      card.style.top=top+"px";card.style.left=Math.min(Math.max(12,r.left+r.width/2-cw/2),W0-cw-12)+"px"}
+    else{if(TOUR.last==="none"&&card.style.top)return;TOUR.last="none";
+      Object.assign(spot.style,{left:W0/2+"px",top:H0/2+"px",width:"0px",height:"0px",opacity:1});
+      card.style.left=(W0-cw)/2+"px";card.style.top=Math.max(12,(H0-(card.offsetHeight||170))/2)+"px"}};
+  TOUR.last="";place();
+  TOUR.timer=setInterval(()=>{if(!TOUR.on)return;if(s.until&&s.until())return tourNext();place()},300);
+}
+/* prime aperture: la guida principale parte solo per chi inizia da zero; le altre alla prima visita della sezione */
+function tourAuto(){
+  if(TOUR.on||!state.kv.opt||document.querySelector(".scrim"))return;const o=state.kv.opt;
+  if(!o.tourInit){o.tourInit=1;if(state.pazienti.length){o.tour=Object.fromEntries(Object.keys(TOURS).map(k=>[k,1]))}saveKV("opt")}
+  if(state.paz||state.stima||state.sec)return;
+  if(state.tab==="pazienti"&&!state.pazienti.length)return tourStart("main");
+  if(["stime","alimenti","modelli","dati"].includes(state.tab))tourStart(state.tab);
+}
+function tourMenu(){return `<div class="card"><h3>Guida</h3><p>Rivedi la guida dei primi passi o quella di una sezione.</p>
+  <div class="actions" style="flex-wrap:wrap">${Object.entries(TOURS).map(([k,v])=>`<button class="btn" data-tour="${k}">${esc(v.t)}</button>`).join("")}</div></div>`}
+function tourBindMenu(){$("#view").querySelectorAll("[data-tour]").forEach(b=>b.onclick=()=>{const k=b.dataset.tour;
+  const tab=k==="main"?"pazienti":k;history.back();setTimeout(()=>{state.tab=tab;render();setTimeout(()=>tourStart(k,true),250)},350)})}
+render=(r=>function(){r.apply(this,arguments);setTimeout(tourAuto,500)})(render);
+addEventListener("resize",()=>{if(TOUR.on){TOUR.last="";}});
 
 /* ═════════ avvio ═════════ */
 load().then(()=>{render();syncLoad();if("launchQueue" in window)launchQueue.setConsumer(async lp=>{for(const h of lp.files||[])handleFile(await h.getFile())})});
