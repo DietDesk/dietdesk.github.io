@@ -307,6 +307,8 @@ main{touch-action:pan-y}
 .tour-spot{position:fixed;z-index:58;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);outline:2px solid #fff;pointer-events:none;transition:left .2s,top .2s,width .2s,height .2s}
 .tour-card{position:fixed;z-index:59;background:var(--bg);color:var(--ink);border-radius:16px;padding:12px 14px;box-shadow:0 10px 36px rgba(0,0,0,.35);transition:top .2s,left .2s}
 .tour-card p{margin:4px 0 10px;font-size:14.5px;line-height:1.45}.tour-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.tour-spot.mini{display:none}.tour-card.mini{top:calc(6px + env(safe-area-inset-top));left:8px;right:8px;width:auto;padding:6px 6px 6px 12px;border-radius:12px;z-index:59}
+.tour-m{display:flex;align-items:center;gap:6px;font-size:13px;line-height:1.3}.tour-m span{flex:1}.tour-m .btn{min-height:30px;padding:2px 12px;flex:none;width:auto}.tour-card.mini{left:auto;right:8px;max-width:calc(100% - 16px)}
 .tour-n{font-size:12px;color:var(--ink-3);font-weight:600}.tour-x{background:none;border:0;font-size:17px;color:var(--ink-2);padding:4px 6px;cursor:pointer}
 .tour-a{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap}.tour-a .btn{min-height:38px}.tour-do{font-size:13px;color:var(--ink-3);margin-right:auto}
 .mbt{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:4px 0 6px}.mbr{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-top:1px solid var(--line);font-size:14px}.mbr:first-child{border-top:0}
@@ -3146,7 +3148,7 @@ async function nativeOpen(url){try{const r=await window.Capacitor.Plugins.Filesy
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="0.22.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="0.22.1"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
@@ -3230,14 +3232,14 @@ const TOURS={
     {title:"Benvenuto in DietDesk",text:"Ti mostro in un minuto come creare un paziente e la sua prima dieta. Puoi fare tu ogni passaggio, saltarlo con → o chiudere la guida con ✕.",btn:"Inizia",
       before:()=>{if(state.paz||state.stima||state.sec||state.tab!=="pazienti"){state.paz=null;state.stima=null;state.sec=null;state.tab="pazienti";render()}}},
     {sel:".fab",title:"Crea un paziente",text:"Tocca + Paziente.",until:()=>!!document.querySelector("#pf")||!!state.paz},
-    {sel:"#pf #pn",title:"Dati del paziente",text:"Bastano nome, data di nascita e sesso: il resto puoi completarlo dopo. Poi tocca Salva in fondo.",until:()=>!!state.paz},
-    {sel:".pseg",title:"Le schede del paziente",text:"Dieta: i giorni del piano. Diario: cosa ha mangiato davvero. Prescrizione: kcal, macronutrienti e quote dei pasti. Paziente: visite, misure e andamento del peso.",btn:"Avanti"},
-    {sel:'[data-pt="prescr"]',title:"La prescrizione",text:"In Prescrizione imposti kcal e percentuali dei macronutrienti, oppure applichi un preset salvato: da lì si calcolano gli obiettivi di ogni pasto.",btn:"Avanti"},
-    {sel:'[data-pt="dieta"]',title:"Torna alla dieta",text:"Ora tocca Dieta.",until:()=>state.paz&&state.ptab==="dieta"},
-    {sel:".fab",title:"Aggiungi un giorno",text:"Tocca + Giorno: puoi partire da un giorno vuoto, da una giornata tipo o da una copia di un altro giorno.",until:()=>!!(state.paz&&state.paz.giorni.length)},
-    {sel:".meals .addbtn",title:"Aggiungi gli alimenti",text:"In ogni pasto tocca Aggiungi alimento, cerca e scrivi i grammi (a crudo, al netto degli scarti). Totali, macronutrienti e quote dei pasti si aggiornano subito.",until:()=>{const d=curDay();return !!(d&&dayVoci(d).length)}},
-    {sel:".meals .item",title:"Grammi e alternative",text:"Tocca un alimento per cambiare i grammi o aggiungere le alternative: le grammature equivalenti si calcolano da sole.",btn:"Avanti"},
-    {sel:"#pm",title:"Stampa e altro",text:"Dal menu ⋮ trovi la stampa (settimanale, giorno per giorno o a porzioni), la lista della spesa, le alternative standard e l'esportazione per Progetto Dieta.",btn:"Avanti"},
+    {mini:true,title:"Guida",text:"compila i dati e tocca Salva",until:()=>!!state.paz},
+    {need:"paz",sel:".pseg",title:"Le schede del paziente",text:"Dieta: i giorni del piano. Diario: cosa ha mangiato davvero. Prescrizione: kcal, macronutrienti e quote dei pasti. Paziente: visite, misure e andamento del peso.",btn:"Avanti"},
+    {need:"paz",sel:'[data-pt="prescr"]',title:"La prescrizione",text:"In Prescrizione imposti kcal e percentuali dei macronutrienti, oppure applichi un preset salvato: da lì si calcolano gli obiettivi di ogni pasto.",btn:"Avanti"},
+    {need:"paz",sel:'[data-pt="dieta"]',title:"Torna alla dieta",text:"Ora tocca Dieta.",until:()=>state.paz&&state.ptab==="dieta"},
+    {need:"paz",sel:".fab",title:"Aggiungi un giorno",text:"Tocca + Giorno: puoi partire da un giorno vuoto, da una giornata tipo o da una copia di un altro giorno.",until:()=>!!(state.paz&&state.paz.giorni.length)},
+    {need:"day",sel:".meals .addbtn",title:"Aggiungi gli alimenti",text:"In ogni pasto tocca Aggiungi alimento, cerca e scrivi i grammi (a crudo, al netto degli scarti). Totali, macronutrienti e quote dei pasti si aggiornano subito.",until:()=>{const d=curDay();return !!(d&&dayVoci(d).length)}},
+    {need:"day",ifTarget:true,sel:".meals .item",title:"Grammi e alternative",text:"Tocca un alimento per cambiare i grammi o aggiungere le alternative: le grammature equivalenti si calcolano da sole.",btn:"Avanti"},
+    {need:"paz",sel:"#pm",title:"Stampa e altro",text:"Dal menu ⋮ trovi la stampa (settimanale, giorno per giorno o a porzioni), la lista della spesa, le alternative standard e l'esportazione per Progetto Dieta.",btn:"Avanti"},
     {title:"Ecco fatto",text:"Le altre sezioni hanno una breve guida alla prima apertura. Puoi rivedere tutte le guide da Impostazioni → Informazioni e guida.",btn:"Fine"}]},
   stime:{t:"Stima apporti",steps:[
     {sel:".fab",title:"Stima degli apporti",text:"Calcola kcal, macronutrienti, micronutrienti e confronto LARN di un richiamo o di un diario, senza creare un paziente. Tocca + Stima per iniziare; sesso, età e peso sono facoltativi.",btn:"Ho capito"}]},
@@ -3257,15 +3259,25 @@ const tourEl=s=>{if(!s.sel)return null;for(const el of document.querySelectorAll
 function tourShow(){
   clearInterval(TOUR.timer);document.querySelectorAll(".tour-spot,.tour-card").forEach(e=>e.remove());
   const s=TOUR.steps[TOUR.i];if(s.before)s.before();
+  if((s.need==="paz"||s.need==="day")&&!state.paz){if(document.querySelector(".scrim"))closeSheet();
+    let p=state.pazienti.find(x=>x._demo)||null;
+    if(!p){p=newPaziente();Object.assign(p,{nome:"Paziente di prova",sesso:"F",data_nascita:"01/01/1990",altezza:165,_demo:1});savePaz(p);toast("Ho creato un \"Paziente di prova\" per continuare la guida: potrai eliminarlo dopo")}
+    state.tab="pazienti";openPaz(p,"dieta");return setTimeout(tourShow,450)}
+  if(s.need==="day"&&state.paz&&!state.paz.giorni.length){state.paz.giorni.push(emptyDay(state.paz,today()));state.day=0;state.ptab="dieta";savePaz(state.paz);render();return setTimeout(tourShow,350)}
+  if((s.need==="paz"||s.need==="day")&&state.ptab!=="dieta"&&s.sel!=='[data-pt="dieta"]'&&s.sel!=='[data-pt="prescr"]'&&s.sel!==".pseg"){state.ptab="dieta";render();return setTimeout(tourShow,300)}
+  if(s.ifTarget&&!tourEl(s))return tourNext();
   if(s.until&&s.until())return tourNext();
-  const spot=document.createElement("div");spot.className="tour-spot";
-  const card=document.createElement("div");card.className="tour-card";card.setAttribute("role","dialog");card.setAttribute("aria-label",s.title);
+  const spot=document.createElement("div");spot.className="tour-spot"+(s.mini?" mini":"");
+  const card=document.createElement("div");card.className="tour-card"+(s.mini?" mini":"");card.setAttribute("role","dialog");card.setAttribute("aria-label",s.title);
   const n=TOUR.steps.length;
   card.innerHTML=`<div class="tour-h"><span class="tour-n">${TOUR.i+1} / ${n}</span><button type="button" class="tour-x" aria-label="Chiudi la guida">✕</button></div>
     <b>${esc(s.title)}</b><p>${esc(s.text)}</p>
     <div class="tour-a">${s.until?`<span class="tour-do">Fai tu il passaggio, oppure</span><button type="button" class="btn tour-skip" aria-label="Salta questo passaggio">Salta →</button>`:`${TOUR.i<n-1?`<button type="button" class="btn tour-skip" aria-label="Salta questo passaggio">→</button>`:""}<button type="button" class="btn primary tour-ok">${esc(s.btn||"Avanti")}</button>`}</div>`;
   card.querySelector(".tour-x").onclick=tourEnd;card.querySelectorAll(".tour-skip,.tour-ok").forEach(b=>b.onclick=tourNext);
   document.body.append(spot,card);
+  if(s.mini){card.innerHTML=`<div class="tour-m"><span><b>${esc(s.title)}</b> · ${esc(s.text)}</span><button type="button" class="btn tour-skip" aria-label="Salta questo passaggio">→</button><button type="button" class="tour-x" aria-label="Chiudi la guida">✕</button></div>`;
+    card.querySelector(".tour-x").onclick=tourEnd;card.querySelector(".tour-skip").onclick=tourNext;
+    TOUR.timer=setInterval(()=>{if(TOUR.on&&s.until&&s.until())tourNext()},300);return}
   const place=()=>{const el=tourEl(s),W0=innerWidth,H0=innerHeight,cw=Math.min(360,W0-24);card.style.width=cw+"px";
     let key="none";
     if(el){const r=el.getBoundingClientRect(),p=6;key=[r.left,r.top,r.width,r.height].map(Math.round).join(",");
