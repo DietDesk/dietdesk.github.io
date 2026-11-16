@@ -3171,7 +3171,7 @@ async function nativeOpen(url){try{const r=await window.Capacitor.Plugins.Filesy
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="1.1.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="1.2.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
@@ -3304,7 +3304,7 @@ const WHO_BMI={u5:{1:[-.3053,13.4069,.0956,-.1867,13.3976,.09597,-.0681,13.3883,
 /* ═════════ calcolatore BMI: adulti (classi WHO) e bambini/ragazzi (z-score e percentili WHO) ═════════ */
 /* Stesso metodo del software WHO Anthro / AnthroPlus: LMS con correzione oltre ±3 DS,
    età in giorni sotto i 5 anni, in mesi con interpolazione da 5 a 19 anni; ±0,7cm se la misura non è nella posizione prevista. */
-const BMI={sesso:"F",peso:"",alt:"",nasc:"",anni:"",mesi:"",data:"",pos:"auto"};
+const BMI={sesso:"F",peso:"",alt:"",nasc:"",anni:"",mesi:"",data:"",pos:"auto",mode:"bmi",target:""};
 function whoLms(sex,days){const s=sex==="M"?1:2,mo=days/30.4375;
   if(mo<60){const i=Math.min(1826,Math.floor(days+0.5)),T=WHO_BMI.u5[s];return{L:T[3*i],M:T[3*i+1],S:T[3*i+2],ref:"u5"}}
   if(mo<229){const T=WHO_BMI.o5[s],lo=Math.trunc(mo),d=mo-lo,a=(lo-60)*3,b=Math.min(lo+1,229)-60;
@@ -3367,25 +3367,52 @@ function bmiResultHTML(){const R=bmiCalc();if(R.need)return `<div class="card"><
     <p class="num" style="margin:10px 0 0">${cut.map(([z,l])=>`${l} <b>${fmt(lmsAt(c,z),1)}</b> (${z>0?"+":"−"}${Math.abs(z)} DS)`).join(" · ")}</p>
     ${R.adj?`<p class="note" style="margin-bottom:0">${esc(R.adj)}</p>`:""}
     <p class="note" style="margin-bottom:0">${R.u5?"Riferimento: WHO Child Growth Standards 2006 (0–5 anni).":"Riferimento: WHO Growth Reference 2007 (5–19 anni)."}${R.yrs>=17.5?" Dai 18 anni si usano le classi per adulti.":""}</p></div>`}
+/* calcolo inverso: peso da altezza e BMI, oppure altezza da peso e BMI.
+   Sotto i 18 anni, con l'età, si può partire da un percentile WHO invece che da un BMI. */
+function bmiInvTargets(){const d=bmiAgeDays();if(d!=null&&!Number.isNaN(d)&&d/365.25<18){const c=whoLms(BMI.sesso,d);if(!c)return[];
+    return[[-1.881,"3° pc"],[-1.036,"15° pc"],[0,"50° pc"],[1.036,"85° pc"],[1.881,"97° pc"]].map(([z,l])=>{const v=Math.round(lmsAt(c,z)*100)/100;return[v,`${l} · ${fmt(v,1)}`]})}
+  return[[18.5,"18,5"],[20,"20"],[22,"22"],[25,"25"],[30,"30"]].map(([v,l])=>[v,l])}
+/* "al 50°", "all'85°", "all'11°" */
+const alArt=p=>/^(8|11[^0-9]|11$)/.test(p)?`<b>all'${p}°`:`al <b>${p}°`;
+function bmiInvHTML(){const T=num(BMI.target),W=num(BMI.peso),H=num(BMI.alt),d=bmiAgeDays(),kid=d!=null&&!Number.isNaN(d)&&d/365.25<18;
+  const card=x=>`<div class="card">${x}</div>`;
+  if(!(T>=8&&T<=80))return card(`<p class="note" style="margin:0">Inserisci il BMI di riferimento (es. 22), oppure scegline uno qui sopra.</p>`);
+  let pc="";if(kid){const c=whoLms(BMI.sesso,d);if(c){const z=whoZ(T,c);pc=` · per ${esc(ageTxt(d))} corrisponde ${alArt(fmtPct(normCdf(z)*100))} percentile</b> (z ${Math.abs(z)<0.005?"0":(z>0?"+":"−")+fmt(Math.abs(z),2)})`}}
+  if(BMI.mode==="peso"){if(!(H>=35&&H<=250))return card(`<p class="note" style="margin:0">Inserisci l'altezza (cm).</p>`);
+    const h2=(H/100)**2,w=T*h2;
+    return card(`<h3>Peso per BMI ${fmt(T,1)}</h3><div class="bmibig"><b class="num">${fmt(w,1)}</b><span>kg</span></div>
+      <p class="num" style="margin:6px 0 0">A ${fmt(H,1)}cm${pc}.</p>
+      ${kid?"":`<p class="num" style="margin:6px 0 0">Normopeso (BMI 18,5–24,9) a questa altezza: <b>${fmt(18.5*h2,1)}–${fmt(24.9*h2,1)}kg</b></p>`}
+      ${W>0?`<p class="num" style="margin:6px 0 0">Rispetto al peso inserito (${fmt(W,1)}kg): <b>${w-W>=0?"+":"−"}${fmt(Math.abs(w-W),1)}kg</b> (${w-W>=0?"+":"−"}${fmt(Math.abs((w-W)/W*100),1)}%)</p>`:""}`)}
+  if(!(W>=0.5&&W<=400))return card(`<p class="note" style="margin:0">Inserisci il peso (kg).</p>`);
+  const h=Math.sqrt(W/T)*100;
+  return card(`<h3>Altezza per BMI ${fmt(T,1)}</h3><div class="bmibig"><b class="num">${fmt(h,1)}</b><span>cm</span></div>
+    <p class="num" style="margin:6px 0 0">Con ${fmt(W,1)}kg${pc}.</p>`)}
+const bmiModeSeg=()=>`<div class="seg" id="bmode" style="margin:0 0 12px;font-size:14px">${[["bmi","Calcola BMI"],["peso","Trova peso"],["alt","Trova altezza"]].map(([k,l])=>`<button data-bm="${k}" aria-pressed="${BMI.mode===k}">${l}</button>`).join("")}</div>`;
 function viewBmi(){const kid=(()=>{const d=bmiAgeDays();return d!=null&&!Number.isNaN(d)&&d/365.25<5})();
   $("#view").innerHTML=W(`${calcSeg()}
-    <div class="bmiwrap"><div class="card"><h3>Calcolo del BMI</h3>
+    <div class="bmiwrap"><div class="card"><h3>Calcolo del BMI</h3>${bmiModeSeg()}
      <p class="note" style="margin-top:0">Adulti e bambini. Sotto i 18 anni servono data di nascita o età: curve WHO con z-score e percentile. Non viene salvato nulla.</p>
      <div class="grid2"><div class="field"><label for="bsx">Sesso</label><select id="bsx"><option value="F"${BMI.sesso==="F"?" selected":""}>Femmina</option><option value="M"${BMI.sesso==="M"?" selected":""}>Maschio</option></select></div>
       <div class="field"><label for="bna">Data di nascita</label><input id="bna" placeholder="gg/mm/aaaa" inputmode="numeric" value="${esc(BMI.nasc)}"></div></div>
      <div class="grid2"><div class="field"><label for="ban">o età: anni</label><input id="ban" inputmode="numeric" value="${esc(BMI.anni)}" ${BMI.nasc?"disabled":""}></div>
       <div class="field"><label for="bme">e mesi</label><input id="bme" inputmode="numeric" value="${esc(BMI.mesi)}" ${BMI.nasc?"disabled":""}></div></div>
-     <div class="grid2"><div class="field"><label for="bpe">Peso (kg)</label><input id="bpe" inputmode="decimal" value="${esc(BMI.peso)}" placeholder="Es. 24,5"></div>
-      <div class="field"><label for="bal">Altezza (cm)</label><input id="bal" inputmode="decimal" value="${esc(BMI.alt)}" placeholder="Es. 121"></div></div>
+     ${BMI.mode!=="bmi"?`<div class="field"><label for="btg">BMI di riferimento (kg/m²)</label><input id="btg" inputmode="decimal" value="${esc(BMI.target)}" placeholder="Es. 22">
+       <div class="quick" id="btq" style="margin-top:6px">${bmiInvTargets().map(([v,l])=>`<button class="pill" data-bt="${v}">${l}</button>`).join("")}</div></div>`:""}
+     <div class="grid2"><div class="field"><label for="bpe">Peso (kg)${BMI.mode==="peso"?" · facoltativo":""}</label><input id="bpe" inputmode="decimal" value="${esc(BMI.peso)}" placeholder="Es. 24,5"></div>
+      <div class="field"${BMI.mode==="alt"?" hidden":""}><label for="bal">Altezza (cm)</label><input id="bal" inputmode="decimal" value="${esc(BMI.alt)}" placeholder="Es. 121"></div></div>
      <div class="field" id="bposw" ${kid?"":"hidden"}><label for="bpo">Misura</label><select id="bpo">${[["auto","Come previsto (sdraiato fino a 2 anni, poi in piedi)"],["sdraiato","Lunghezza da sdraiato"],["piedi","Altezza in piedi"]].map(([k,l])=>`<option value="${k}"${BMI.pos===k?" selected":""}>${l}</option>`).join("")}</select></div>
      <div class="grid2" style="align-items:end"><div class="field" style="margin-bottom:0"><label for="bdt">Data della misura</label><input id="bdt" placeholder="gg/mm/aaaa" inputmode="numeric" value="${esc(BMI.data||today())}"></div>
       <button class="btn" id="bclr">Azzera</button></div></div>
-    <div id="bres">${bmiResultHTML()}</div></div>`);
+    <div id="bres">${BMI.mode==="bmi"?bmiResultHTML():bmiInvHTML()}</div></div>`);
   calcSegBind();decorateDates($("#view"));
-  const upd=()=>{BMI.sesso=$("#bsx").value;BMI.peso=$("#bpe").value;BMI.alt=$("#bal").value;BMI.nasc=$("#bna").value.trim();BMI.anni=$("#ban").value;BMI.mesi=$("#bme").value;BMI.data=$("#bdt").value.trim();BMI.pos=$("#bpo").value;
-    $("#ban").disabled=$("#bme").disabled=!!BMI.nasc;const d=bmiAgeDays();$("#bposw").hidden=!(d!=null&&!Number.isNaN(d)&&d/365.25<5);$("#bres").innerHTML=bmiResultHTML()};
-  ["#bsx","#bpe","#bal","#bna","#ban","#bme","#bdt","#bpo"].forEach(id=>{const e=$(id);e.addEventListener("input",upd);e.addEventListener("change",upd)});
-  $("#bclr").onclick=()=>{Object.assign(BMI,{peso:"",alt:"",nasc:"",anni:"",mesi:"",data:"",pos:"auto"});viewBmi()}}
+  const upd=()=>{BMI.sesso=$("#bsx").value;BMI.peso=$("#bpe").value;BMI.alt=$("#bal").value;BMI.nasc=$("#bna").value.trim();BMI.anni=$("#ban").value;BMI.mesi=$("#bme").value;BMI.data=$("#bdt").value.trim();BMI.pos=$("#bpo").value;if($("#btg"))BMI.target=$("#btg").value;
+    $("#ban").disabled=$("#bme").disabled=!!BMI.nasc;const d=bmiAgeDays();$("#bposw").hidden=!(d!=null&&!Number.isNaN(d)&&d/365.25<5);$("#bres").innerHTML=BMI.mode==="bmi"?bmiResultHTML():bmiInvHTML();
+    const q=$("#btq");if(q){const k=JSON.stringify(bmiInvTargets());if(q.dataset.k!==k){q.dataset.k=k;q.innerHTML=bmiInvTargets().map(([v,l])=>`<button class="pill" data-bt="${v}">${l}</button>`).join("")}}};
+  ["#bsx","#bpe","#bal","#bna","#ban","#bme","#bdt","#bpo","#btg"].forEach(id=>{const e=$(id);if(!e)return;e.addEventListener("input",upd);e.addEventListener("change",upd)});
+  $("#bmode").onclick=e=>{const b=e.target.closest("[data-bm]");if(!b||b.dataset.bm===BMI.mode)return;upd();BMI.mode=b.dataset.bm;viewBmi()};
+  const q=$("#btq");if(q){q.dataset.k=JSON.stringify(bmiInvTargets());q.onclick=e=>{const b=e.target.closest("[data-bt]");if(!b)return;$("#btg").value=String(b.dataset.bt).replace(".",",");upd()}}
+  $("#bclr").onclick=()=>{Object.assign(BMI,{peso:"",alt:"",nasc:"",anni:"",mesi:"",data:"",pos:"auto",target:""});viewBmi()}}
 /* scheda Calcoli: stima degli apporti e BMI */
 const calcSeg=()=>`<div class="seg" id="cseg">${[["stime","Stima apporti"],["bmi","BMI"]].map(([k,l])=>`<button data-ct="${k}" aria-pressed="${(state.ctool||"stime")===k}">${l}</button>`).join("")}</div>`;
 function calcSegBind(){const s=$("#cseg");if(s)s.onclick=e=>{const b=e.target.closest("[data-ct]");if(!b||b.dataset.ct===(state.ctool||"stime"))return;state.ctool=b.dataset.ct;render()}}
