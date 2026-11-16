@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-DBDby2lZLZZOYc+v8mTKz8YW7AuxRsipnmhKOBfcywM=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-krl70rHMubuGufkQt9YI+72kTgwKj2x+T3M6/bf3z0w=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -3330,7 +3330,7 @@ async function nativeOpen(url){try{const FS=window.Capacitor.Plugins.Filesystem;
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="1.5.1"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="1.5.2"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
@@ -3345,7 +3345,7 @@ async function updCheck(manual){if(!isNative())return;const P=updPlug();UPD.err=
   if(manual&&!updNew())toast(`DietDesk è aggiornato (${APP_VER})`);
   if(!manual&&updNew())updBalloon()}
 const updSt=t=>{UPD.st=t;const e=document.getElementById("updst");if(e){e.textContent=t;e.hidden=!t}};
-async function updInstall(){const L=UPD.latest;if(!L)return;const P=updPlug();UPD.err="";
+async function updInstall(){const L=UPD.latest;if(!L)return;if(updReinstall()){rerender();return}const P=updPlug();UPD.err="";
   if(!P){UPD.err="Componente di aggiornamento non disponibile: usa \"Scarica dal browser\".";return rerender()}
   updSt("Download dell'aggiornamento in corso…");toast("Download dell'aggiornamento…");
   const slow=setTimeout(()=>updSt("Il download sta impiegando più del previsto. Se non succede nulla, usa \"Scarica dal browser\"."),45000);
@@ -3354,14 +3354,30 @@ async function updInstall(){const L=UPD.latest;if(!L)return;const P=updPlug();UP
 /* alternativa: apre il file nel browser di sistema (fuori dall'app) */
 function updBrowser(){const L=UPD.latest;if(!L)return;const u=new URL(L.apk,UPD_URL);
   if(u.origin!=="https://dietdesk.github.io"||!/^\/apk\/DietDesk-\d+\.\d+\.\d+\.apk$/.test(u.pathname))return toast("Indirizzo dell'aggiornamento non valido");location.href=u.href}
+/* versione firmata con una chiave nuova: Android non la installa sopra quella attuale, va reinstallata.
+   I dati non passano da soli: prima si salvano (Drive o backup), poi si disinstalla e si installa la nuova. */
+const updReinstall=()=>!!(UPD.latest&&UPD.latest.reinstall===true&&updNew());
+function updReinstallHTML(){const L=UPD.latest,dr=syncOn()&&isDrive();
+  return `<div class="card" style="border:2px solid var(--accent)"><h3>DietDesk ${esc(L.version)}: va reinstallata</h3>
+   <p style="margin-top:0">Questa versione ha una nuova firma di sicurezza: Android non la installa sopra quella attuale. <b>I dati non passano da soli</b>, quindi segui i passaggi in quest'ordine.</p>
+   <ol style="padding-left:20px;margin:0 0 10px;line-height:1.5">
+    <li><b>Metti al sicuro i dati.</b> ${dr?`La sincronizzazione con Google Drive è attiva: tocca <b>Sincronizza ora</b> e controlla che non ci siano modifiche in attesa. Ricorda la passphrase.`:`Tocca <b>Crea backup</b> e salva il file fuori dall'app (Download, Drive o email a te stesso).`}</li>
+    <li><b>Scarica la nuova versione</b> con il pulsante qui sotto e aspetta che il download finisca.</li>
+    <li><b>Disinstalla DietDesk</b>: tieni premuta l'icona → Disinstalla (o Impostazioni del telefono → App → DietDesk → Disinstalla).</li>
+    <li><b>Installa</b> il file DietDesk-${esc(L.version)}.apk dalla cartella Download.</li>
+    <li><b>Recupera i dati</b>: ${dr?`Impostazioni → Sincronizzazione → Collega Google Drive, con la stessa passphrase.`:`Impostazioni → Backup → Ripristina e scegli il file salvato al passaggio 1.`}</li></ol>
+   <div class="actions" style="flex-wrap:wrap">${dr?`<button class="btn" id="updsy">Sincronizza ora</button>`:`<button class="btn" id="updbk">Crea backup</button>`}<button class="btn primary" id="updbr">Scarica la nuova versione</button></div>
+   <p class="note" style="margin-bottom:0">Anche i backup automatici restano in Documenti/DietDesk/Backup dopo la disinstallazione: per aprirli serve la loro passphrase.</p></div>`}
 function updCard(){if(!isNative())return"";const L=UPD.latest,nw=updNew();
+  if(updReinstall())return updReinstallHTML()+`<div class="card"><h3>Aggiornamenti</h3><p class="num" style="margin:0">Versione installata: <b>${esc(APP_VER)}</b></p></div>`;
   return `<div class="card"><h3>Aggiornamenti</h3><p class="num">Versione installata: <b>${esc(APP_VER)}</b>${L?` · ultima disponibile: <b>${esc(L.version)}</b>`:UPD.done?"":" · controllo in corso…"}</p>
    <p class="note" id="updst" ${UPD.st?"":"hidden"}>${esc(UPD.st||"")}</p>
    ${UPD.err?`<p class="over">${esc(UPD.err)}</p>`:""}
    ${nw&&L.note?`<p>${esc(L.note)}</p>`:""}
    <div class="actions" style="flex-wrap:wrap">${nw?`<button class="btn primary" id="updgo">Aggiorna a ${esc(L.version)}</button><button class="btn" id="updbr">Scarica dal browser</button>`:""}<button class="btn" id="updck">Controlla aggiornamenti</button></div>
    <p class="note" style="margin-bottom:0">I dati restano nell'app: l'aggiornamento sostituisce solo il programma. La prima volta Android chiede di consentire a DietDesk di installare app.</p></div>`}
-function updBind(){const c=$("#updck");if(c)c.onclick=()=>{toast("Controllo…");updCheck(true)};const g=$("#updgo");if(g)g.onclick=updInstall;const br=$("#updbr");if(br)br.onclick=updBrowser;
+function updBind(){const bk=$("#updbk");if(bk)bk.onclick=backup;const sy=$("#updsy");if(sy)sy.onclick=()=>{toast("Sincronizzazione…");syncNow().then(()=>toast(SY.status==="err"?"Sincronizzazione non riuscita: "+SY.err:SY.dirty.size?"Ancora "+SY.dirty.size+" modifiche in attesa: riprova":"Sincronizzato: i dati sono su Google Drive"))};
+  const c=$("#updck");if(c)c.onclick=()=>{toast("Controllo…");updCheck(true)};const g=$("#updgo");if(g)g.onclick=updInstall;const br=$("#updbr");if(br)br.onclick=updBrowser;
   if(isNative()&&!UPD.done&&!UPD._busy){UPD._busy=1;updCheck(false).finally(()=>{UPD._busy=0})}}
 /* ── avviso di aggiornamento all'apertura: al massimo una volta al giorno per dispositivo ──
    Un solo controllo per avvio (nessun timer ripetuto). Il giorno è salvato solo su questo dispositivo, non nella sincronizzazione. */
@@ -3370,7 +3386,7 @@ const updDayGet=()=>{try{return localStorage.getItem(UPD_DAY_KEY)||""}catch(e){r
 const updDaySet=()=>{try{localStorage.setItem(UPD_DAY_KEY,new Date().toDateString())}catch(e){}};
 function updBalloon(){const L=UPD.latest;if(!L||!updNew()||updDayGet()===new Date().toDateString()||document.querySelector(".upd-ball"))return;
   updDaySet();const b=document.createElement("div");b.className="upd-ball";b.setAttribute("role","status");
-  b.innerHTML=`<div><b>È disponibile DietDesk ${esc(String(L.version))}</b>${L.note?`<span>${esc(String(L.note).slice(0,200))}</span>`:""}</div>
+  b.innerHTML=`<div><b>È disponibile DietDesk ${esc(String(L.version))}</b>${L.reinstall===true&&isNative()?`<span>Questa versione va reinstallata: tocca Aggiorna e segui i passaggi, prima di disinstallare.</span>`:L.note?`<span>${esc(String(L.note).slice(0,200))}</span>`:""}</div>
     <div class="upd-ball-a"><button type="button" class="btn" data-x>Più tardi</button><button type="button" class="btn primary" data-go>Aggiorna</button></div>`;
   const close=()=>{b.classList.remove("on");setTimeout(()=>b.remove(),250)};
   b.querySelector("[data-x]").onclick=close;
