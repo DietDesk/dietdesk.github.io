@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-l87Tu6oADgQ/yERBjcqODsiI3TAJvcNSG/Cj60diaB0=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -619,7 +619,7 @@ function sanPaz(p){if(!p||typeof p!=="object")return p;
     for(const k of Object.keys(v)){const x=v[k];
       if(k==="id")v.id=sId(x);else if(k==="data")v.data=sDate(x)||today();else if(/^(note|nota|testo|commento)$/.test(k))v[k]=sStr(x,20000);
       else if(Array.isArray(x)||x==null){}
-      else if(typeof x==="object"){for(const j of Object.keys(x))if(typeof x[j]!=="boolean")x[j]=/nome|note|nota|tipo|metodo|device|strument/i.test(j)?sStr(x[j],200):sNum(x[j])}
+      else if(typeof x==="object"){for(const j of Object.keys(x)){if(/^(__proto__|constructor|prototype)$/.test(j)){delete x[j];continue}if(typeof x[j]!=="boolean")x[j]=/nome|note|nota|tipo|metodo|device|strument/i.test(j)?sStr(x[j],200):sNum(x[j])}}
       else if(typeof x!=="boolean")v[k]=/nome|tipo|metodo|device|strument/i.test(k)?sStr(x,200):sNum(x)}
     return v}));else p.visite=[];
   if(p.escl&&typeof p.escl==="object"){if(Array.isArray(p.escl.t))p.escl.t=p.escl.t.map(String).filter(x=>/^[a-z_]{1,24}$/.test(x))}
@@ -628,9 +628,26 @@ function sanPaz(p){if(!p||typeof p!=="object")return p;
   return p}
 function sanFood(f){if(!f||typeof f!=="object")return f;f.n=sStr(f.n,200);f.c=/^\d{2}$/.test(String(f.c))?String(f.c):"50";
   if(!/^[a-z]$/.test(String(f.o||"")))f.o="u";if(Array.isArray(f.v))f.v=f.v.map(x=>sNum(x,0));
-  if(Array.isArray(f.ing))f.ing=f.ing.filter(i=>i&&i.n).map(i=>{i.n=sStr(i.n,200);i.g=sNum(i.g,0);return i});
+  /* ingredienti delle ricette: testo ("Pasta 80g", anche da Progetto Dieta) oppure {n,g} */
+  const ingL=L=>L.filter(i=>typeof i==="string"?i.trim():i&&typeof i==="object"&&i.n).map(i=>typeof i==="string"?sStr(i,200):(i.n=sStr(i.n,200),i.g=sNum(i.g,0),i));
+  if(Array.isArray(f.ing))f.ing=ingL(f.ing);else if(f.ing!=null)delete f.ing;
+  if(Array.isArray(f.ingS))f.ingS=ingL(f.ingS).filter(i=>typeof i==="object");else if(f.ingS!=null)delete f.ingS;
+  if(Array.isArray(f.proc))f.proc=f.proc.map(x=>sStr(x,1000));else if(f.proc!=null)delete f.proc;
   ["resa","porz"].forEach(k=>{if(f[k]!=null)f[k]=sNum(f[k])});return f}
+function sanPr(r){if(!r||typeof r!=="object")return null;r.id=sId(r.id);r.nome=sStr(r.nome,80);if(r.dal!=null)r.dal=sDate(r.dal);
+  ["kcal","pP","pL","pkg","fibra","mbv","laf"].forEach(k=>{if(k in r)r[k]=sNum(r[k],k==="kcal"?1800:0)});
+  if(r.mbm!=null&&!/^[a-z]{2,10}$/.test(String(r.mbm)))delete r.mbm;
+  if(r.split!=null)r.split=Array.isArray(r.split)?r.split.filter(Array.isArray).map(x=>[sStr(x[0],80),sNum(x[1],0)]):[];
+  if(r.t!=null){if(typeof r.t!=="object"||Array.isArray(r.t))delete r.t;else for(const k of Object.keys(r.t)){if(!/^[A-Z][A-Z0-9_]{0,30}$/.test(k))delete r.t[k];else r.t[k]=sNum(r.t[k])}}
+  return r}
+const objs=v=>(Array.isArray(v)?v:[]).filter(x=>x&&typeof x==="object"&&!Array.isArray(x));
 function sanKVval(k,v){
+  if(k==="presets")return objs(v).map(sanPr).filter(Boolean);
+  if(k==="modelli")return objs(v).map(m=>{m.id=sId(m.id);m.nome=sStr(m.nome,120);if(m.titolo!=null)m.titolo=sStr(m.titolo,120);if(m.kcal!=null)m.kcal=sNum(m.kcal,0);m.pasti=sPasti(m.pasti);return m});
+  if(k==="pasti")return objs(v).map(m=>{m.id=sId(m.id);m.nome=sStr(m.nome,120);if(m.tipo!=null)m.tipo=sStr(m.tipo,80);m.voci=sVoci(m.voci);return m});
+  if(k==="opt"){if(!v||typeof v!=="object"||Array.isArray(v))return{};
+    if(v.cols!=null){if(Array.isArray(v.cols))v.cols=v.cols.map(String).filter(c=>/^[A-Z][A-Z0-9_]{0,30}$/.test(c));else delete v.cols}
+    ["fuWeeks","step","subStep"].forEach(x=>{if(v[x]!=null)v[x]=sNum(v[x])});return v}
   if(k==="stime"&&Array.isArray(v))return v.filter(s=>s&&typeof s==="object").map(s=>{s.id=sId(s.id);s.nome=sStr(s.nome,200);s.data=sDate(s.data)||today();
     s.sesso=s.sesso==="M"||s.sesso==="F"?s.sesso:"";s.eta=sNum(s.eta);s.peso=sNum(s.peso);if(s.note!=null)s.note=sStr(s.note,20000);
     s.giorni=(Array.isArray(s.giorni)?s.giorni:[]).filter(g=>g&&typeof g==="object").map(g=>{g.titolo=sStr(g.titolo,120);g.pasti=sPasti(g.pasti);return g});
@@ -648,10 +665,10 @@ async function load(){
   catch(e){state.persist=false;toast("Archivio non disponibile: i dati restano solo finché l'app è aperta")}
   if(!state.kv.presets)state.kv.presets=clean(DEF_PRESETS);
   try{if(!localStorage.getItem("nd_theme")&&state.kv.opt.theme){localStorage.setItem("nd_theme",JSON.stringify(state.kv.opt.theme));applyTheme()}}catch(e){if(state.kv.opt.theme)applyTheme(state.kv.opt.theme)}
-  state.pazienti.forEach(p=>{migrate(p);sanPaz(p)});state.userFoods.forEach(sanFood);["stime","alt","porzioni"].forEach(k=>{if(state.kv[k])state.kv[k]=sanKVval(k,state.kv[k])});
+  state.pazienti.forEach(p=>{migrate(p);sanPaz(p)});state.userFoods.forEach(sanFood);KV_KEYS.forEach(k=>{if(state.kv[k]!=null)state.kv[k]=keep(state.kv[k],sanKVval(k,state.kv[k]))});
   rebuildFoods();migrateAlt();
 }
-async function saveKV(k){if(["stime","alt","porzioni"].includes(k)&&state.kv[k])state.kv[k]=sanKVval(k,state.kv[k]);try{await store.put("kv",clean(state.kv[k]),k)}catch(e){}if(KV_KEYS.includes(k))markDirty("kv",k)}
+async function saveKV(k){if(state.kv[k]!=null)state.kv[k]=keep(state.kv[k],sanKVval(k,state.kv[k]));try{await store.put("kv",clean(state.kv[k]),k)}catch(e){}if(KV_KEYS.includes(k))markDirty("kv",k)}
 async function savePaz(p){
   if(state.ro&&p===state.paz&&syncOn()){toast("Paziente in uso su un altro dispositivo: modifica non salvata");let o=null;try{o=await store.get("pazienti",p.id)}catch(e){}
     if(o){migrate(o);const i=state.pazienti.indexOf(p);if(i>=0)state.pazienti[i]=o;state.paz=o}setTimeout(rerender,0);return}
@@ -773,7 +790,7 @@ function render(){
   $("#tabs").hidden=!!(state.paz||state.stima)&&!wide();
   document.querySelectorAll(".fab").forEach(x=>x.remove());
   const st=$("#view").scrollTop;
-  if(state.paz)viewPaziente();else({pazienti:viewPazienti,stime:viewStime,alimenti:viewAlimenti,modelli:viewModelli,dati:viewDati})[state.tab]();
+  if(state.paz)viewPaziente();else(({pazienti:viewPazienti,stime:viewStime,alimenti:viewAlimenti,modelli:viewModelli,dati:viewDati})[state.tab]||viewPazienti)();
   if(render.keep){$("#view").scrollTop=st;render.keep=false}
 }
 const rerender=()=>{render.keep=true;render()};
@@ -827,7 +844,7 @@ function viewPaziente(){
   const seg=`<div class="seg pseg">${[["dieta","Dieta"],["diario","Diario"],["prescr","Prescrizione"],["visite","Paziente"]].map(([k,l])=>`<button data-pt="${k}" aria-pressed="${state.ptab===k}">${l}</button>`).join("")}</div>`;
   $("#view").innerHTML=W(lockBar()+seg+(state.ptab==="dieta"?dietaHTML(p):state.ptab==="diario"?diarioHTML(p):`<div class="pgrid">${state.ptab==="prescr"?prescrHTML(p):visiteHTML(p)}</div>`));
   $("#view").querySelectorAll("[data-pt]").forEach(b=>b.onclick=()=>{state.ptab=b.dataset.pt;render()});
-  ({dieta:bindDieta,diario:bindDiario,prescr:bindPrescr,visite:bindVisite})[state.ptab](p);bindLockBar();applyRO();
+  (({dieta:bindDieta,diario:bindDiario,prescr:bindPrescr,visite:bindVisite})[state.ptab]||bindDieta)(p);bindLockBar();applyRO();
   if(state.ro)document.querySelectorAll(".fab").forEach(x=>x.remove());
 }
 function pazMenu(p){
@@ -903,7 +920,7 @@ function nutrTable(T){return `<table class="ntable">${GROUPS.map(([g,cols])=>`<t
 const OPEN=new WeakMap();function openSet(d){if(!OPEN.has(d))OPEN.set(d,new Set());return OPEN.get(d)}
 function mealTable(m,mi,t,mt){
   const C=detCols();const cell=(c,f,g)=>c==="G"?fmt(g):fmtN(val(f,c,g));
-  const head=C.map(c=>{if(c==="G")return `<th>Peso<small>g</small></th>`;const[l,u]=lab(c);return `<th>${esc(l)}<small>${u}</small></th>`}).join("");
+  const head=C.map(c=>{if(c==="G")return `<th>Peso<small>g</small></th>`;const[l,u]=lab(c);return `<th>${esc(l)}<small>${esc(u)}</small></th>`}).join("");
   const rows=m.voci.map((x,vi)=>{const f=food(x.n);return `<tr data-m="${mi}" data-v="${vi}"><td>${esc(x.n)}${f?warnTag(f):""}${subsLine(x)}</td>${C.map(c=>`<td>${f||c==="G"?cell(c,f,x.g):"–"}</td>`).join("")}</tr>`}).join("");
   const tot=`<tr class="tot"><td>Totale pasto</td>${C.map(c=>`<td>${c==="G"?fmt(m.voci.reduce((a,x)=>a+x.g,0)):fmtN(t[c])}</td>`).join("")}</tr>`;
   const tg=mt?`<tr class="tgt"><td>Target pasto</td>${C.map(c=>`<td>${mt[c]!=null?fmtN(mt[c]):""}</td>`).join("")}</tr>`:"";
@@ -1038,7 +1055,7 @@ function optimizeMeal(p,d,m){
    const draw=()=>{run();const after=items.map((it,i)=>({n:it.v.n,g:res?res[i]:it.g0}));const T0=totals(m.voci),T1=totals(after);const sh=mealShare(r,m.nome);
      ob.innerHTML=`<p class="note" style="margin-top:0">${sh!=null?`Target dal ${Math.round(sh*100)}% di "${esc(r.nome)}". `:""}Modifica i target, blocca gli alimenti da non toccare e scegli l'arrotondamento.</p>
      <div class="tablewrap"><table class="ntable"><tr><th></th><th>Nutriente</th><th class="r">Target</th><th class="r">Prima</th><th class="r">Dopo</th></tr>
-     ${T.map((x,i)=>{const[l,u]=lab(x.c);const b=T1[x.c];const ok=x.t>0&&Math.abs(b-x.t)/x.t<=.05;return `<tr><td><input type="checkbox" data-ton="${i}" ${x.on?"checked":""} aria-label="Usa ${l}"></td><td>${l}${i>3?` <button class="linkbtn" data-trm="${i}" aria-label="Rimuovi ${l}">×</button>`:""}</td><td class="r"><input data-tv="${i}" inputmode="decimal" value="${x.t}" aria-label="Target ${l}" style="width:68px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);text-align:right;padding:0 6px">${u}</td><td class="r">${fmtN(T0[x.c])}</td><td class="r ${x.on?(ok?"okc":"over"):""}"><b>${fmtN(b)}</b></td></tr>`}).join("")}</table></div>
+     ${T.map((x,i)=>{const[l,u]=lab(x.c);const b=T1[x.c];const ok=x.t>0&&Math.abs(b-x.t)/x.t<=.05;return `<tr><td><input type="checkbox" data-ton="${i}" ${x.on?"checked":""} aria-label="Usa ${l}"></td><td>${l}${i>3?` <button class="linkbtn" data-trm="${i}" aria-label="Rimuovi ${l}">×</button>`:""}</td><td class="r"><input data-tv="${i}" inputmode="decimal" value="${esc(x.t)}" aria-label="Target ${l}" style="width:68px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);text-align:right;padding:0 6px">${u}</td><td class="r">${fmtN(T0[x.c])}</td><td class="r ${x.on?(ok?"okc":"over"):""}"><b>${fmtN(b)}</b></td></tr>`}).join("")}</table></div>
      <select id="oadd" aria-label="Aggiungi target" style="width:100%;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 8px;margin:8px 0 14px"><option value="">+ Target su un altro nutriente (es. calcio, fibra, sodio)…</option>${nutOpts.filter(c=>!T.some(x=>x.c===c)).map(c=>`<option value="${c}">${lab(c)[0]}</option>`).join("")}</select>
      <div class="label">Alimenti · spunta per bloccare</div>
      ${items.map((it,i)=>{const g=res?res[i]:it.g0,dl=g-it.g0;return `<div class="optrow"><input type="checkbox" data-lock="${i}" ${it.lock?"checked":""} aria-label="Blocca ${esc(it.v.n)}"><span style="min-width:0;overflow-wrap:anywhere">${esc(it.v.n)}</span><span class="num" style="text-align:right;color:var(--ink-3)">${fmt(it.g0)}g</span><span class="num chg" style="text-align:right;color:${dl>0?"var(--ok)":dl<0?"var(--warn)":"var(--ink)"}">${fmt(g)}g</span></div>`}).join("")}
@@ -1108,7 +1125,7 @@ function mbCardHTML(p,r){const C=mbCalc(p),d=C.d,ch=mbChosen(p,r,C),laf=r.laf||1
      <p class="note">${esc([`${fmt(d.W,1)}kg, ${fmt(d.H)}cm, ${d.A} anni${d.bmi?`, BMI ${fmt(d.bmi,1)}`:""}`,d.FFM?`massa magra ${fmt(d.FFM,1)}kg (${d.ffmSrc})`:"",C.note].filter(Boolean).join(" · "))}</p>`:C.note?`<p class="note">${esc(C.note)}</p>`:""}
    <div class="field"><label for="mbm">Metabolismo basale</label><select id="mbm">${opts.map(([k,l])=>`<option value="${k}"${(r.mbm||"media")===k?" selected":""}>${esc(l)}</option>`).join("")}</select></div>
    <div class="field"><label for="lafs">Livello di attività (LAF, valori LARN)</label><select id="lafs">${LAF_P.map(([f,l])=>`<option value="${f}"${laf===f?" selected":""}>${l} · ${String(f).replace(".",",")}</option>`).join("")}<option value="man"${lafP?"":" selected"}>Inserito a mano</option></select></div>
-   <div class="grid2"><div class="field"><label for="mbv">${(r.mbm||"media")==="manuale"?"Valore (kcal)":"Basale scelto"}</label><input id="mbv" inputmode="numeric" ${(r.mbm||"media")==="manuale"?`value="${r.mbv||""}" placeholder="Es. 1450"`:`value="${ch?fmt(ch.v):"—"}" disabled`}></div><div class="field"><label for="lafv">LAF</label><input id="lafv" inputmode="decimal" value="${String(laf).replace(".",",")}" ${lafP?"disabled":""}></div></div>
+   <div class="grid2"><div class="field"><label for="mbv">${(r.mbm||"media")==="manuale"?"Valore (kcal)":"Basale scelto"}</label><input id="mbv" inputmode="numeric" ${(r.mbm||"media")==="manuale"?`value="${esc(r.mbv||"")}" placeholder="Es. 1450"`:`value="${ch?fmt(ch.v):"—"}" disabled`}></div><div class="field"><label for="lafv">LAF</label><input id="lafv" inputmode="decimal" value="${String(laf).replace(".",",")}" ${lafP?"disabled":""}></div></div>
    ${tee?`<div class="mbtee"><span>Fabbisogno stimato</span><b class="num">${fmt(tee)}kcal</b><small class="num">${fmt(ch.v)} × ${String(laf).replace(".",",")} · ${esc(ch.l)}</small></div>
      <div class="label" style="margin:10px 0 6px">Imposta l'energia della prescrizione</div>
      <div class="quick">${goals.map(([g,l])=>{const k=Math.round(tee*(1+g/100)/50)*50;return `<button class="pill" data-tee="${k}">${l} → ${fmt(k)}kcal</button>`}).join("")}</div>`:`<p class="note">Scegli il basale (o inseriscilo a mano) per calcolare il fabbisogno.</p>`}
@@ -1133,12 +1150,12 @@ function prescrHTML(p){
    ${p.prescrizioni.length>1?`<button class="linkbtn" id="prdel" style="color:var(--warn)">Elimina questa prescrizione</button>`:""}</div>
   <div class="card"><div class="head"><h3>Preset</h3><button class="btn small" id="pre">Applica preset</button><button class="btn small" id="psave">Salva come preset</button></div><p style="margin:0">Carica obiettivi e suddivisione già pronti, oppure salva questi come nuovo preset.</p></div>
   <div class="card"><h3>Energia e macronutrienti</h3>
-   <div class="grid2"><div class="field"><label for="rk">Energia (kcal/die)</label><input id="rk" inputmode="numeric" value="${r.kcal}"></div>
+   <div class="grid2"><div class="field"><label for="rk">Energia (kcal/die)</label><input id="rk" inputmode="numeric" value="${esc(r.kcal)}"></div>
    <div class="field"><label for="rf">Fibra (g/die)</label><input id="rf" inputmode="decimal" value="${r.fibra}"></div></div>
    <div class="grid2"><div class="field"><label for="rpm">Proteine come</label><select id="rpm"><option value="pct"${r.pkg?"":" selected"}>% delle kcal</option><option value="gkg"${r.pkg?" selected":""}>g per kg di peso</option></select></div>
    <div class="field"><label for="rp">${r.pkg?"Proteine (g/kg)":"Proteine (% kcal)"}</label><input id="rp" inputmode="decimal" value="${r.pkg||r.pP}">${r.pkg&&!w?`<span class="hint over">Serve il peso del paziente: inseriscilo qui sotto</span>`:r.pkg?`<span class="hint">Peso di riferimento ${fmt(w,1)}kg (ultima visita)</span>`:""}</div></div>
    ${r.pkg&&!w?`<div class="field"><label for="rpw">Peso attuale (kg)</label><input id="rpw" inputmode="decimal" placeholder="Es. 72,5"></div>`:""}
-   <div class="grid2"><div class="field"><label for="rl">Lipidi (% kcal)</label><input id="rl" inputmode="decimal" value="${r.pL}"></div>
+   <div class="grid2"><div class="field"><label for="rl">Lipidi (% kcal)</label><input id="rl" inputmode="decimal" value="${esc(r.pL)}"></div>
    <div class="field"><label>Glucidi (% kcal)</label><input disabled value="${fmt(t.pG,1)}"><span class="hint">Calcolati per differenza</span></div></div>
    <div class="kv num"><div><span>Proteine</span><b>${fmt(t.PROTEINE)}g</b><span>${fmt(t.pP,1)}%${t.gkg?" · "+fmt(t.gkg,2)+"g/kg":""}</span></div><div><span>Lipidi</span><b>${fmt(t.LIPIDI)}g</b><span>${fmt(t.pL,1)}%</span></div><div><span>Glucidi</span><b>${fmt(t.GLUCIDI)}g</b><span>${fmt(t.pG,1)}%</span></div><div><span>Fibra</span><b>${fmt(t.FIBRA)}g</b><span>${fmt(t.FIBRA/r.kcal*1000,1)}g/1000kcal</span></div></div>
    ${t.pG<40?`<p class="note over">Glucidi sotto il 40% delle kcal: controlla proteine e lipidi.</p>`:""}
@@ -2512,11 +2529,11 @@ function editPreset(pr){
   const isNew=!pr;pr=pr?clean(pr):{id:uid(),nome:"",kcal:1800,pP:18,pL:30,pkg:0,fibra:25,split:SPLITS[5].map(x=>x.slice())};
   sheet(`<h2>${isNew?"Nuovo preset":"Preset"}</h2><form id="prf" class="scroll">
    <div class="field"><label for="prn">Nome</label><input id="prn" required value="${esc(pr.nome)}" placeholder="Es. 1600kcal · 5 pasti"></div>
-   <div class="grid3"><div class="field"><label for="prk">Energia (kcal)</label><input id="prk" inputmode="numeric" value="${pr.kcal}"></div>
-   <div class="field"><label for="prl">Lipidi (%)</label><input id="prl" inputmode="decimal" value="${pr.pL}"></div>
-   <div class="field"><label for="prfi">Fibra (g)</label><input id="prfi" inputmode="decimal" value="${pr.fibra}"></div></div>
+   <div class="grid3"><div class="field"><label for="prk">Energia (kcal)</label><input id="prk" inputmode="numeric" value="${esc(pr.kcal)}"></div>
+   <div class="field"><label for="prl">Lipidi (%)</label><input id="prl" inputmode="decimal" value="${esc(pr.pL)}"></div>
+   <div class="field"><label for="prfi">Fibra (g)</label><input id="prfi" inputmode="decimal" value="${esc(pr.fibra)}"></div></div>
    <div class="grid2"><div class="field"><label for="prm">Proteine come</label><select id="prm"><option value="pct"${pr.pkg?"":" selected"}>% delle kcal</option><option value="gkg"${pr.pkg?" selected":""}>g per kg</option></select></div>
-   <div class="field"><label for="prp">Valore</label><input id="prp" inputmode="decimal" value="${pr.pkg||pr.pP}"></div></div>
+   <div class="field"><label for="prp">Valore</label><input id="prp" inputmode="decimal" value="${esc(pr.pkg||pr.pP)}"></div></div>
    <div class="field"><label for="prs">Suddivisione dei pasti</label><input id="prs" value="${esc(pr.split.map(x=>x[0]+" "+x[1]).join(", "))}"><span class="hint">Nome e percentuale, separati da virgola: Colazione 20, Pranzo 40, Cena 40</span></div>
    <div class="actions">${isNew?`<button type="button" class="btn" data-close>Annulla</button>`:`<button type="button" class="btn danger" id="prdel">Elimina</button>`}<button class="btn primary">Salva</button></div></form>`,s=>{
    if(!isNew)s.querySelector("#prdel").onclick=async()=>{state.kv.presets=state.kv.presets.filter(x=>x.id!==pr.id);await saveKV("presets");closeSheet();rerender()};
@@ -2751,7 +2768,7 @@ async function importCpd(buf){
     if(parts[i]==="PREFERITO"){const f=parts[i+1].split(SEP),fd=food(f[1]||""),g=num(f[3]);if(fd&&g){const k=key(fd.n),L=state.kv.porzioni[k]=state.kv.porzioni[k]||[],l=(f[2]||"").replace(fd.n,"").replace(/^[\s-]+/,"").trim()||fmt(g)+"g";if(!L.some(x=>x.g===g)&&!DB.prefs.some(x=>key(x.f)===k&&x.g===g)){L.push({l,g});await saveKV("porzioni")}}continue}
     if(parts[i]!=="ALIMENTO")continue;let f=parts[i+1].split(SEP);
     if(f.length<91)continue;const extra=f.length-91;let name=f.slice(2,3+extra).join("·").trim();
-    if(extra){const re=new RegExp("^"+f.slice(2,3+extra).map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join(".{1,2}")+"$","i");const m=FOODS.find(x=>re.test(x.n));if(m)name=m.n}
+    if(extra&&extra<=3){const re=new RegExp("^"+f.slice(2,3+extra).map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join(".{1,2}")+"$","i");const m=FOODS.find(x=>re.test(x.n));if(m)name=m.n}
     f=[f[0],f[1],name,...f.slice(3+extra)];
     const v=COLS.map((c,j)=>parseFloat((f[3+j]||"0").replace(",","."))||0);
     const ex=food(name);if(ex&&ex.v.join()===v.join())continue;
@@ -2781,10 +2798,10 @@ async function backup(){const d=new Date();await bkcLoad();const o=backupObj();
   saveFile(`DietDesk_backup_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}.json`,data)}
 function restore(j){
   confirmSheet("Ripristinare il backup?",`Il file contiene ${j.pazienti.length} pazienti e ${j.alimenti.length} alimenti${j.kv?", oltre a preset, giornate tipo, pasti e porzioni":""}. Gli elementi già presenti con lo stesso identificativo vengono sostituiti; gli altri restano.`,"Ripristina",async()=>{
-    for(const f of j.alimenti)await saveFood(f);
-    for(const p of j.pazienti){migrate(p);const i=state.pazienti.findIndex(x=>x.id===p.id);if(i>=0)state.pazienti[i]=p;await savePaz(p)}
-    if(j.kv){for(const k of ["presets","modelli","pasti","stime"]){const cur=state.kv[k]||[];(j.kv[k]||[]).forEach(x=>{const i=cur.findIndex(y=>y.id===x.id);if(i>=0)cur[i]=x;else cur.push(x)});state.kv[k]=cur;await saveKV(k)}
-      Object.entries(j.kv.porzioni||{}).forEach(([k,L])=>{const cur=state.kv.porzioni[k]=state.kv.porzioni[k]||[];L.forEach(x=>{if(!cur.some(y=>y.g===x.g&&y.l===x.l))cur.push(x)})});await saveKV("porzioni")}
+    for(const f of objs(j.alimenti))await saveFood(f);
+    for(const p of objs(j.pazienti)){migrate(p);const i=state.pazienti.findIndex(x=>x.id===p.id);if(i>=0)state.pazienti[i]=p;await savePaz(p)}
+    if(j.kv&&typeof j.kv==="object"){for(const k of ["presets","modelli","pasti","stime"]){const cur=state.kv[k]||[];sanKVval(k,objs(j.kv[k])).forEach(x=>{const i=cur.findIndex(y=>y.id===x.id);if(i>=0)cur[i]=x;else cur.push(x)});state.kv[k]=cur;await saveKV(k)}
+      Object.entries(sanKVval("porzioni",j.kv.porzioni&&typeof j.kv.porzioni==="object"&&!Array.isArray(j.kv.porzioni)?j.kv.porzioni:{})).forEach(([k,L])=>{const cur=state.kv.porzioni[k]=state.kv.porzioni[k]||[];L.forEach(x=>{if(!cur.some(y=>y.g===x.g&&y.l===x.l))cur.push(x)})});await saveKV("porzioni")}
     render();toast("Backup ripristinato")});
 }
 
@@ -3176,7 +3193,7 @@ async function nativeOpen(url){try{const r=await window.Capacitor.Plugins.Filesy
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="1.3.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="1.3.1"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
@@ -3195,7 +3212,7 @@ async function updInstall(){const L=UPD.latest;if(!L)return;const P=updPlug();UP
   if(!P){UPD.err="Componente di aggiornamento non disponibile: usa \"Scarica dal browser\".";return rerender()}
   updSt("Download dell'aggiornamento in corso…");toast("Download dell'aggiornamento…");
   const slow=setTimeout(()=>updSt("Il download sta impiegando più del previsto. Se non succede nulla, usa \"Scarica dal browser\"."),45000);
-  try{await P.install({url:new URL(L.apk,UPD_URL).href});clearTimeout(slow);updSt("Installazione avviata: conferma nella finestra di Android.")}
+  try{await P.install({url:new URL(L.apk,UPD_URL).href,sha256:/^[0-9a-f]{64}$/i.test(String(L.sha256||""))?L.sha256:""});clearTimeout(slow);updSt("Installazione avviata: conferma nella finestra di Android.")}
   catch(e){clearTimeout(slow);updSt("");const m=e&&e.code==="PERM"?"Attiva \"Consenti da questa fonte\" per DietDesk, poi torna qui e tocca di nuovo Aggiorna":"Aggiornamento non riuscito: "+(e&&e.message||e);UPD.err=m;toast(m);rerender()}}
 /* alternativa: apre il file nel browser di sistema (fuori dall'app) */
 function updBrowser(){const L=UPD.latest;if(!L)return;location.href=new URL(L.apk,UPD_URL).href}
@@ -3235,6 +3252,11 @@ setTimeout(async()=>{try{
   if(isNative()){if(await updPending())return;if(updDayGet()!==new Date().toDateString()||Date.now()-((state.kv.opt||{}).updChk||0)>432e5)updCheck(false)}
   else if(updDayGet()!==new Date().toDateString())updWebCheck()}catch(e){}},4000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&isNative())updPending()});
+/* Android: i file esportati e condivisi (diete, backup, calendari, PDF) restano nella cache dell'app.
+   All'avvio si cancellano quelli più vecchi di 1 ora: l'app che li ha ricevuti ne ha già fatto una copia. */
+setTimeout(async()=>{try{if(!isNative())return;const FS=window.Capacitor.Plugins.Filesystem;const r=await FS.readdir({path:"",directory:"CACHE"});
+  const lim=Date.now()-36e5;for(const f of r.files||[]){const n=typeof f==="string"?f:f.name,t=typeof f==="object"?+f.mtime||+f.ctime||0:0;
+    if(/\.(json|ndiet|ppd|cpd|ics|pdf|xlsx|csv|txt)$/i.test(n)&&(f.type?f.type==="file":true)&&t&&t<lim){try{await FS.deleteFile({path:n,directory:"CACHE"})}catch(e){}}}}catch(e){}},9000);
 
 /* ═════════ backup cifrati ═════════ */
 /* La passphrase dei backup non viene salvata: sul dispositivo resta solo la chiave che se ne ricava (non esportabile),
