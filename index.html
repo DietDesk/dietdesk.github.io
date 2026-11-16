@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-D13tfXtBAVIiMh6e0pMe12LNF1AKgTgihwGnm/Y5lU4=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-DBDby2lZLZZOYc+v8mTKz8YW7AuxRsipnmhKOBfcywM=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -2569,11 +2569,7 @@ function viewDati(){
   updBind();abkBind();
   $("#view").querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{setTheme({...getTheme(),mode:b.dataset.tm});rerender()});
   $("#view").querySelectorAll("[data-tc]").forEach(b=>b.onclick=()=>{setTheme({...getTheme(),color:b.dataset.tc});rerender()});
-  const sb=$("#syset");if(sb)sb.onclick=syncSetup;const sn=$("#synow");if(sn)sn.onclick=()=>{toast("Sincronizzazione…");syncNow().then(()=>{rerender();toast(SY.status==="err"?"Sincronizzazione non riuscita: "+SY.err:"Sincronizzato")})};const so=$("#syoff");if(so)so.onclick=syncDisconnect;const gr=$("#gdre");if(gr)gr.onclick=gdReconnect;const gl=$("#gdlink");if(gl)gl.onclick=syncSetup;
-  const gs=$("#gdstr");if(gs)gs.onclick=()=>sheet(`<h2>Rafforza la protezione</h2><p style="color:var(--ink-2);margin:0 0 12px">Scrivi la passphrase dell'archivio: l'archivio su Drive viene cifrato di nuovo con una protezione più forte. Sugli altri dispositivi servirà reinserirla una volta.</p>
-    <div class="field"><label for="gsp">Passphrase</label><input id="gsp" type="password" autocomplete="current-password"></div><div class="actions"><button class="btn" data-close>Annulla</button><button class="btn primary" id="ok">Rafforza</button></div>`,sh=>{
-    const b=sh.querySelector("#ok");b.onclick=async()=>{const v=sh.querySelector("#gsp").value;if(!v)return;b.disabled=true;b.textContent="Cifratura…";
-      try{await syncNow();await gdStrengthen(v);closeSheet();rerender();toast("Protezione rafforzata")}catch(e){b.disabled=false;b.textContent="Rafforza";toast(String(e.message||e))}}});
+  const sb=$("#syset");if(sb)sb.onclick=syncSetup;const sn=$("#synow");if(sn)sn.onclick=()=>{toast("Sincronizzazione…");syncNow().then(()=>{rerender();toast(SY.status==="err"?"Sincronizzazione non riuscita: "+SY.err:"Sincronizzato")})};const so=$("#syoff");if(so)so.onclick=syncDisconnect;const gr=$("#gdre");if(gr)gr.onclick=gdReconnect;syncBindExtra();
   $("#imp").onclick=()=>pickFile(".xlsx,.xls,.ppd,.ndiet,.json,.cpd");$("#rs").onclick=()=>pickFile(".json");$("#bk").onclick=backup;
 }
 /* su Android il selettore non conosce i tipi .ppd/.cpd/.ndiet e li mostra in grigio: lì si accetta qualsiasi file e il tipo si riconosce dal contenuto */
@@ -2876,7 +2872,7 @@ function viewDati(){
   if(k==="imp")$("#imp").onclick=()=>pickFile(".xlsx,.xls,.ppd,.ndiet,.json,.cpd");
   if(k==="asp"){$("#view").querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{setTheme({...getTheme(),mode:b.dataset.tm});rerender()});
     $("#view").querySelectorAll("[data-tc]").forEach(b=>b.onclick=()=>{setTheme({...getTheme(),color:b.dataset.tc});rerender()})}
-  if(k==="sync"){const sb=$("#syset");if(sb)sb.onclick=syncSetup;const sn=$("#synow");if(sn)sn.onclick=()=>{toast("Sincronizzazione…");syncNow().then(()=>{rerender();toast(SY.status==="err"?"Sincronizzazione non riuscita: "+SY.err:"Sincronizzato")})};
+  if(k==="sync"){syncBindExtra();const sb=$("#syset");if(sb)sb.onclick=syncSetup;const sn=$("#synow");if(sn)sn.onclick=()=>{toast("Sincronizzazione…");syncNow().then(()=>{rerender();toast(SY.status==="err"?"Sincronizzazione non riuscita: "+SY.err:"Sincronizzato")})};
     const so=$("#syoff");if(so)so.onclick=syncDisconnect;const gr=$("#gdre");if(gr)gr.onclick=gdReconnect}
   if(k==="fb")fbBind();if(k==="info")tourBindMenu();
 }
@@ -3112,6 +3108,22 @@ async function gdSync1(){
     return}
   throw new Error("archivio modificato da un altro dispositivo nello stesso momento: riprovo tra poco")}
 
+/* pulsanti della sincronizzazione che non stanno nella riga dei comandi base: ricollegamento con passphrase e rafforzamento */
+function syncBindExtra(){const gl=$("#gdlink");if(gl)gl.onclick=syncSetup;
+  const gs=$("#gdstr");if(gs)gs.onclick=()=>sheet(`<h2>Rafforza la protezione</h2><p style="color:var(--ink-2);margin:0 0 12px">Scrivi la passphrase dell'archivio: l'archivio su Drive viene cifrato di nuovo con una protezione più forte (600.000 iterazioni). Ci vuole qualche secondo. Sugli altri dispositivi servirà reinserirla una volta.</p>
+    <div class="field"><label for="gsp">Passphrase</label><input id="gsp" type="password" autocomplete="current-password"></div>
+    <p class="note" id="gsst" hidden></p>
+    <div class="actions"><button class="btn" data-close>Annulla</button><button class="btn primary" id="ok">Rafforza</button></div>`,sh=>{
+    const b=sh.querySelector("#ok"),st=sh.querySelector("#gsst"),inp=sh.querySelector("#gsp");setTimeout(()=>inp.focus(),50);
+    const say=t=>{st.hidden=!t;st.textContent=t||""};
+    const go=async()=>{const v=inp.value;if(!v)return say("Scrivi la passphrase.");b.disabled=true;b.textContent="Attendi…";
+      try{say("Sincronizzazione delle ultime modifiche…");await syncNow();if(SY.status==="err")throw new Error(SY.err);
+        say("Verifica della passphrase e nuova cifratura dell'archivio: qualche secondo…");await gdStrengthen(v);
+        sheet(`<h2>Protezione rafforzata ✓</h2><p style="margin:0 0 12px">L'archivio su Google Drive ora è cifrato con 600.000 iterazioni.</p>
+          <p style="color:var(--ink-2);margin:0 0 14px">Sugli <b>altri dispositivi</b> collegati comparirà "Inserisci la passphrase": toccalo e scrivi la stessa passphrase di sempre. Fino ad allora quei dispositivi non sincronizzano, ma i loro dati restano al sicuro.</p>
+          <div class="actions"><button class="btn primary" data-close>Ho capito</button></div>`);rerender()}
+      catch(e){b.disabled=false;b.textContent="Rafforza";say("");toast(/errata/i.test(String(e.message))?"Passphrase errata":"Non riuscito: "+String(e.message||e).replace(/^Error: /,""))}};
+    b.onclick=go;inp.onkeydown=e=>{if(e.key==="Enter")go()}})}
 /* ═════════ formato 2 dell'archivio su Drive ═════════
    Ogni elemento è {iv,ct,t}: t fuori è solo un indizio per non decifrare tutto; quello che conta è dentro la parte cifrata
    ({k,t,del,o}), autenticata con AES-GCM insieme alla chiave dell'elemento. Così data e cancellazione non si possono
@@ -3318,7 +3330,7 @@ async function nativeOpen(url){try{const FS=window.Capacitor.Plugins.Filesystem;
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="1.5.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="1.5.1"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
