@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-WhweLiJVfChj73tYNSzSkuydBQ99I+wvbZK4V4JhS1I=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-kxY+3SnA1ktHNMuifSUpqYIfsssncuBNJCGyye2iMsI=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -100,7 +100,7 @@ nav.tabs button[aria-current="true"]{color:var(--accent);font-weight:650}
 .ctree>summary>span:first-child{flex:1}.ctree .cnt{color:var(--accent);font-weight:700;white-space:nowrap}.ctm{margin:0 8px 6px 18px;border-radius:10px}.ctm>summary{font-weight:500;padding:8px 10px}.ctf{padding:0 10px 4px 26px}
 .unsaved{position:absolute;inset:auto 0 0 0;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.15);padding:14px 16px calc(14px + env(safe-area-inset-bottom));border-radius:16px 16px 0 0;z-index:5}
 .pedch{width:100%;height:auto;display:block;margin:4px 0}.pedch .g{stroke:var(--line,rgba(0,0,0,.1));stroke-width:.6}.pedch text{font-size:9px;fill:var(--ink-3)}.pedch .c{fill:none;stroke:var(--accent);stroke-width:1;opacity:.75}.pedch .c.m{stroke-width:2;opacity:1}.pedch .pl{font-size:8.5px}.pedch .low{fill:none;stroke:#c62828;stroke-width:1.4;stroke-dasharray:4 3}.pedch .pt{fill:#c62828;stroke:var(--surface);stroke-width:2}
-.bmiwrap{display:grid;gap:0 14px}@media(min-width:900px){.bmiwrap{grid-template-columns:1fr 1fr;align-items:start}}
+.bmiwrap{display:grid;gap:0 14px;grid-template-columns:minmax(0,1fr)}.bmiwrap>*{min-width:0}@media(min-width:900px){.bmiwrap{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
 .bmibig{display:flex;align-items:baseline;gap:6px}.bmibig b{font-size:34px;line-height:1.1}.bmibig span{color:var(--ink-2);font-size:14px}
 .bmibar{position:relative;height:12px;border-radius:6px;margin:6px 0 4px}
 .bmibar.adult{background:linear-gradient(90deg,#e57373 0 11.67%,#ffb74d 11.67% 21.67%,#81c784 21.67% 33.33%,#ffb74d 33.33% 50%,#e57373 50%)}
@@ -3462,7 +3462,7 @@ async function nativeOpen(url){try{const FS=window.Capacitor.Plugins.Filesystem;
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="2.0.4"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="2.0.5"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
