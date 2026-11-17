@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-RiztR3igcGSMBS2LvkANES3Tk7A9wAs3Nd4okPFdljM=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-lTN4cWS2Mz80ciDu1SLUJwKq+l+3w92c3csSUvip9X8=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk-accesso.delaurentis-dietista.workers.dev https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -55,7 +55,7 @@ main{flex:1;overflow-y:auto;padding:14px max(16px,env(safe-area-inset-right,0px)
 .wrap{max-width:860px;margin:0 auto}
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);
   display:flex;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
-nav.tabs button{flex:1;background:none;border:0;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--ink-3);border-radius:calc(10px*var(--rk,1))}
+nav.tabs button{flex:1;min-width:0;background:none;border:0;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:clamp(10px,2.85vw,12px);letter-spacing:-.005em;white-space:nowrap;color:var(--ink-3);border-radius:calc(10px*var(--rk,1))}
 nav.tabs button svg{width:22px;height:22px}
 nav.tabs button[aria-current="true"]{color:var(--accent);font-weight:650}
 nav.tabs{touch-action:none;user-select:none;-webkit-user-select:none}nav.tabs button{position:relative;z-index:1}
@@ -65,10 +65,19 @@ nav.tabs{touch-action:none;user-select:none;-webkit-user-select:none}nav.tabs bu
 nav.tabs.drag .tabind{transition:width .25s,height .25s,transform .2s;transform:scale(1.08)}
 nav.tabs.drag button[aria-current="true"]{color:var(--ink-3);font-weight:inherit}nav.tabs.drag button.hov{color:var(--accent);font-weight:650}
 @media (prefers-reduced-motion:reduce){.tabind{transition:none}}
+nav.tabs .tabupd{display:none}
 @media (min-width:900px), (orientation:landscape) and (max-height:540px) and (min-width:640px){
-  #app{padding-left:92px}
+  nav.tabs .tabupd{display:flex;position:relative;margin-top:10px;color:var(--accent);font-weight:650;border-radius:calc(16px*var(--rk,1));padding:9px 0 8px;
+    background:color-mix(in srgb,var(--accent) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent)}
+  nav.tabs .tabupd:hover{background:color-mix(in srgb,var(--accent) 20%,transparent)}
+  nav.tabs .tabupd::after{content:"";position:absolute;top:7px;right:calc(50% - 17px);width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--surface);animation:updpulse 2.4s ease-in-out infinite}
+  nav.tabs .tabupd[hidden]{display:none}}
+@keyframes updpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
+@media (prefers-reduced-motion:reduce){nav.tabs .tabupd::after{animation:none}}
+@media (min-width:900px), (orientation:landscape) and (max-height:540px) and (min-width:640px){
+  #app{padding-left:calc(92px + env(safe-area-inset-left,0px))}
   header.bar{min-height:50px;padding-top:calc(env(safe-area-inset-top,0px) + 6px);padding-bottom:6px}
-  nav.tabs{top:0;right:auto;width:92px;flex-direction:column;justify-content:flex-start;gap:6px;border-top:0;border-right:1px solid var(--line);padding:76px 8px 12px}
+  nav.tabs{top:0;right:auto;width:calc(92px + env(safe-area-inset-left,0px));flex-direction:column;justify-content:flex-start;gap:6px;border-top:0;border-right:1px solid var(--line);padding:76px 8px 12px calc(8px + env(safe-area-inset-left,0px))}
   nav.tabs button{flex:none;padding:10px 0}
   main{padding-bottom:40px}
   .fab{bottom:28px!important}
@@ -206,7 +215,7 @@ body.dropping::after{content:"Rilascia qui per importare (.ppd, .ndiet, .xlsx, .
 .tag.p{background:var(--accent-soft);color:var(--accent)}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:680px;max-height:94%;border-radius:calc(20px*var(--rk,1)) calc(20px*var(--rk,1)) 0 0;display:flex;flex-direction:column;
-  padding:8px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:up .2s ease-out}
+  padding:8px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:sheetin var(--sh-t) var(--sh-e) both}
 .sheet.full{height:94%}
 @media (min-width:900px), (orientation:landscape) and (max-height:540px) and (min-width:640px){.scrim{align-items:center}.sheet{border-radius:calc(20px*var(--rk,1));max-height:92%}.sheet.full{height:92%}}
 @media (orientation:landscape) and (max-height:540px){nav.tabs{padding-top:12px;gap:0;overflow-y:auto}nav.tabs button{padding:6px 0}.sheet{max-height:96%}.sheet.full{height:96%}}
@@ -221,6 +230,26 @@ body.dropping::after{content:"Rilascia qui per importare (.ppd, .ndiet, .xlsx, .
 }
 @media (min-width:1500px){.daygrid .meals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.daygrid .meals>#addmeal{grid-column:1/-1}}
 @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+/* fogli in primo piano: il foglio sale, lo sfondo si vela e sfoca gradualmente, la pagina sotto arretra; alla chiusura tutto torna indietro insieme */
+:root{--sh-t:.36s;--sh-e:cubic-bezier(.2,.85,.25,1);--sh-back:.94}
+@keyframes sheetin{from{transform:translateY(100%)}to{transform:none}}
+@keyframes scrimin{from{background-color:transparent;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}}
+.scrim{animation:scrimin var(--sh-t) ease-out both}
+html{background:var(--bg)}
+#app{background:var(--bg);transform-origin:50% 0;transition:transform var(--sh-t) var(--sh-e),border-radius var(--sh-t) var(--sh-e),filter var(--sh-t) ease}
+html.sheeton{background:#050506}html.sheeton body{background:transparent}
+html.sheeton #app{transform:translateY(calc(env(safe-area-inset-top,0px) + 10px)) scale(var(--sh-back));border-radius:calc(22px*var(--rk,1));overflow:hidden}
+.scrimg{position:fixed;inset:0;z-index:19;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;background:rgba(0,0,0,.45);
+  transition:background-color .28s ease-in,-webkit-backdrop-filter .28s ease-in,backdrop-filter .28s ease-in}
+.scrimg .sheet{animation:none;transition:transform .28s cubic-bezier(.4,0,.8,.6),opacity .28s ease-in}
+.scrimg.go{background-color:transparent!important;-webkit-backdrop-filter:blur(0)!important;backdrop-filter:blur(0)!important}
+.scrimg.go .sheet{transform:translateY(100%)!important}
+@media (min-width:900px), (orientation:landscape) and (max-height:540px) and (min-width:640px){
+  :root{--sh-back:.975}
+  @keyframes sheetin{from{transform:translateY(24px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+  .scrimg{align-items:center}.scrimg.go .sheet{transform:translateY(16px) scale(.96)!important;opacity:0}}
+@media (prefers-reduced-motion:reduce){:root{--sh-t:.01s}html.sheeton #app{transform:none}.scrimg{transition:none}}
+@media print{html.sheeton #app{transform:none!important}}
 @media (prefers-reduced-motion:reduce){.sheet{animation:none}}
 .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 10px;flex:none}
 .sheet h2{font-size:18px;margin:0 0 10px;text-wrap:balance;overflow-wrap:anywhere}
@@ -242,6 +271,8 @@ body.dropping::after{content:"Rilascia qui per importare (.ppd, .ndiet, .xlsx, .
 .preview span{font-size:11px;color:var(--ink-3)}
 .actions{display:flex;gap:10px;margin-top:6px}
 .btn{flex:1;min-height:50px;border-radius:calc(14px*var(--rk,1));border:1px solid var(--line);background:var(--surface);font-weight:650;padding:0 12px}
+a.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:var(--ink);text-align:center;box-sizing:border-box}
+a.btn.primary{color:var(--accent-ink)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .btn.danger{color:var(--warn)}
 .btn.small{min-height:38px;flex:none;border-radius:calc(10px*var(--rk,1));font-size:14px}
@@ -418,8 +449,13 @@ main{touch-action:pan-y}
 :root[data-style="vetro"][data-theme="dark"]{--glass-edge:rgba(255,255,255,.14)}
 @media (prefers-color-scheme:dark){:root[data-style="vetro"]:not([data-theme="light"]){--glass-edge:rgba(255,255,255,.14)}}
 [data-style="vetro"] body{background:radial-gradient(120% 60% at 0% 0%,var(--accent-soft) 0%,transparent 55%),radial-gradient(90% 50% at 100% 100%,color-mix(in srgb,var(--accent-soft) 70%,transparent) 0%,transparent 60%),var(--bg);background-attachment:fixed}
-[data-style="vetro"] header.bar{background:color-mix(in srgb,var(--bg) 70%,transparent);color:var(--ink);-webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7);
-  padding-top:calc(env(safe-area-inset-top,0px) + 18px);padding-bottom:12px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+[data-style="vetro"] header.bar{background:transparent;color:var(--ink);transition:background .25s;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  -webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - 22px),transparent);
+  padding-top:calc(env(safe-area-inset-top,0px) + 18px);padding-bottom:30px;margin-bottom:-18px;border-bottom:0}
+/* a riposo la barra del titolo è trasparente; quando il contenuto le scorre sotto si vela e sfoca, sfumando verso il basso */
+[data-style="vetro"] header.bar.scrolled{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 80%,transparent) 0%,color-mix(in srgb,var(--bg) 55%,transparent) 65%,transparent 100%);
+  -webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6)}
 [data-style="vetro"] header.bar h1{font-size:26px;font-weight:750;letter-spacing:-.01em}
 [data-style="vetro"] header.bar .sub{color:var(--ink-2);opacity:1;font-size:13px}
 [data-style="vetro"] .card{background:var(--glass-strong);border:1px solid var(--glass-edge);box-shadow:var(--glass-shade);border-radius:var(--r)}
@@ -430,7 +466,8 @@ main{touch-action:pan-y}
 [data-style="vetro"] .seg button{border-radius:999px}
 [data-style="vetro"] .seg button[aria-pressed="true"]{background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.6)}
 [data-style="vetro"] .field input,[data-style="vetro"] .field select,[data-style="vetro"] .field textarea,[data-style="vetro"] .search{border-radius:calc(16px*var(--rk,1));background:var(--glass-strong)}
-[data-style="vetro"] .scrim{background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+[data-style="vetro"] .scrim,[data-style="vetro"] .scrimg{background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+[data-style="vetro"] #app{background:radial-gradient(120% 60% at 0% 0%,var(--accent-soft) 0%,transparent 55%),radial-gradient(90% 50% at 100% 100%,color-mix(in srgb,var(--accent-soft) 70%,transparent) 0%,transparent 60%),var(--bg)}
 [data-style="vetro"] .sheet{background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(30px) saturate(1.6);backdrop-filter:blur(30px) saturate(1.6);border-radius:calc(30px*var(--rk,1)) calc(30px*var(--rk,1)) 0 0;border:1px solid var(--glass-edge);border-bottom:0}
 [data-style="vetro"] .fab{border-radius:calc(22px*var(--rk,1));box-shadow:0 10px 26px color-mix(in srgb,var(--accent) 40%,transparent),inset 0 1px 0 rgba(255,255,255,.35)}
 [data-style="vetro"] .toast{border-radius:calc(22px*var(--rk,1));padding:11px 18px;background:color-mix(in srgb,var(--ink) 82%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
@@ -440,14 +477,21 @@ main{touch-action:pan-y}
   -webkit-backdrop-filter:blur(26px) saturate(1.8) brightness(1.04);backdrop-filter:blur(26px) saturate(1.8) brightness(1.04);
   box-shadow:0 12px 34px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(0,0,0,.04)}
 [data-style="vetro"] nav.tabs button{padding:7px 0 6px}
+@media (max-width:420px){[data-style="vetro"] nav.tabs{left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));padding:5px}}
 [data-style="vetro"] .tabind{border-radius:calc(26px*var(--rk,1));background:color-mix(in srgb,var(--accent-soft) 75%,rgba(255,255,255,.35));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.08)}
 @supports (corner-shape:squircle){[data-style="vetro"] .tabind{border-radius:45%;corner-shape:squircle}[data-style="vetro"] .card,[data-style="vetro"] .sheet{corner-shape:squircle}}
 [data-style="vetro"] nav.tabs.drag .tabind{transform:scale(1.14);background:rgba(255,255,255,.28);-webkit-backdrop-filter:blur(2px) saturate(2) brightness(1.08);backdrop-filter:blur(2px) saturate(2) brightness(1.08);
   box-shadow:inset 0 1px 1px rgba(255,255,255,.9),inset 0 -2px 4px rgba(0,0,0,.08),0 6px 18px rgba(0,0,0,.18)}
 @media (min-width:900px), (orientation:landscape) and (max-height:540px) and (min-width:640px){
-  [data-style="vetro"] nav.tabs{top:12px;bottom:12px;left:12px;right:auto;width:84px;padding:68px 6px 12px}
-  [data-style="vetro"] #app{padding-left:104px}}
+  [data-style="vetro"] nav.tabs{top:50%;bottom:auto;transform:translateY(-50%);left:calc(12px + env(safe-area-inset-left,0px));right:auto;width:92px;height:auto;max-height:calc(100% - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+    padding:8px 6px;gap:4px;justify-content:center;overflow-y:auto;scrollbar-width:none}
+  [data-style="vetro"] nav.tabs button{font-size:11.5px;padding:10px 0 9px}
+  [data-style="vetro"] #app{padding-left:calc(112px + env(safe-area-inset-left,0px))}
+  [data-style="vetro"] header.bar{margin-left:calc(-112px - env(safe-area-inset-left,0px));padding-left:calc(120px + env(safe-area-inset-left,0px))}}
+@media (orientation:landscape) and (max-height:540px) and (min-width:640px){
+  [data-style="vetro"] nav.tabs{gap:0;padding:6px}[data-style="vetro"] nav.tabs button{padding:6px 0 5px}[data-style="vetro"] nav.tabs button svg{width:20px;height:20px}
+  [data-style="vetro"] header.bar{padding-top:calc(env(safe-area-inset-top,0px) + 10px);padding-bottom:22px}[data-style="vetro"] header.bar h1{font-size:22px}}
 main,.sheet .scroll{zoom:var(--zoom,1)}
 /* densità compatta: meno spazio tra righe, schede e campi; i caratteri restano uguali */
 [data-density="compact"] body{line-height:1.35}
@@ -472,6 +516,7 @@ main,.sheet .scroll{zoom:var(--zoom,1)}
 [data-glass="lite"] header.bar{background:var(--bg)}
 [data-glass="lite"] nav.tabs{background:var(--surface)!important}
 [data-glass="lite"] .sheet{background:var(--bg)}
+[data-glass="lite"] .scrim,[data-glass="lite"] .scrimg{background:rgba(0,0,0,.4)}
 [data-glass="lite"] .tour-card{background:var(--surface)}
 [data-glass="lite"] .toast{background:var(--ink)}
 [data-glass="lite"] nav.tabs.drag .tabind{background:var(--accent-soft)}
@@ -489,6 +534,7 @@ main,.sheet .scroll{zoom:var(--zoom,1)}
     <button data-tab="alimenti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4 0-7-3-7-8 0-4 3-6 5-6 1 0 1.5.5 2 .5s1-.5 2-.5c2 0 5 2 5 6 0 5-3 8-7 8z"/><path d="M12 7c0-2 1-4 3-4"/></svg>Alimenti</button>
     <button data-tab="modelli"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Modelli</button>
     <button data-tab="dati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Impostazioni</button>
+    <button class="tabupd" id="tabupd" hidden title="È disponibile una nuova versione di DietDesk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Aggiorna</button>
   </nav>
 </div>
 <input type="file" id="filein" hidden>
@@ -907,6 +953,7 @@ function applyTheme(t){t=t||getTheme();const root=document.documentElement;if(t.
   else if(bgm==="nero"){S("--bg","#000000");S("--surface",hsl(h,10,7));S("--sunken",hsl(h,10,11));S("--line",hsl(h,9,18));S("--ink",hsl(h,14,92));S("--ink-2",hsl(h,8,72));S("--ink-3",hsl(h,5,54))}
   else{S("--bg",hsl(h,18*ts,7.3));S("--surface",hsl(h,16*ts,11.5));S("--sunken",hsl(h,15*ts,15.3));S("--line",hsl(h,13*ts,20.2));S("--ink",hsl(h,20*ts,91.6));S("--ink-2",hsl(h,10*ts,71.2));S("--ink-3",hsl(h,6*ts,52.9))}
   S("--zoom",FSCALE[t.fs]||1);
+  try{requestAnimationFrame(()=>{if(typeof tabInd==="function")tabInd()});setTimeout(()=>{if(typeof tabInd==="function")tabInd()},320)}catch(e){}
   S("--rk",{sq:.45,m:1,ar:1.5}[t.rc]||1);if(t.dn==="c")root.setAttribute("data-density","compact");else root.removeAttribute("data-density");
   const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t.style==="vetro"||bgm==="nero"&&dark?getComputedStyle(root).getPropertyValue("--bg").trim()||a[1]:dark?a[3]:a[1]}
 function setTheme(t){try{localStorage.setItem("nd_theme",JSON.stringify(t))}catch(e){}state.kv.opt.theme=t;saveKV("opt");applyTheme(t)}
@@ -926,7 +973,9 @@ document.getElementById("tabs").addEventListener("click",e=>{if(TABDRAG.skip){TA
 const TABDRAG={on:false,moved:false,skip:false,x0:0,y0:0,id:null};
 function tabIndEl(){const n=$("#tabs");let i=n.querySelector(".tabind");if(!i){i=document.createElement("i");i.className="tabind";i.setAttribute("aria-hidden","true");n.prepend(i)}return i}
 function tabIndAt(cx,cy,b){const n=$("#tabs"),i=tabIndEl(),nr=n.getBoundingClientRect(),r=(b||n.querySelector("button[data-tab]")).getBoundingClientRect();
-  const w=wide()?Math.min(r.width-8,76):Math.min(r.width-6,84),h=wide()?r.height-4:r.height-2;
+  let lw=0;try{const g=document.createRange(),t=[...(b||n.querySelector("button[data-tab]")).childNodes].filter(x=>x.nodeType===3&&x.textContent.trim()).pop();if(t){g.selectNodeContents(t);lw=g.getBoundingClientRect().width}}catch(e){}
+  /* il selettore è largo almeno quanto l'etichetta (es. "Impostazioni"), senza superare il tasto */
+  const w=Math.min(r.width+10,Math.max(lw+14,wide()?Math.min(r.width-8,76):Math.min(r.width-6,84))),h=wide()?r.height-4:r.height-2;
   i.style.width=w+"px";i.style.height=h+"px";i.style.left=(cx-nr.left-w/2+n.scrollLeft)+"px";i.style.top=(cy-nr.top-h/2+n.scrollTop)+"px"}
 function tabInd(){const n=$("#tabs");if(!n||n.hidden)return;const b=n.querySelector('button[aria-current="true"]'),i=tabIndEl();if(!b){i.style.opacity="0";return}i.style.opacity="1";
   const r=b.getBoundingClientRect();tabIndAt(r.left+r.width/2,r.top+r.height/2,b)}
@@ -944,7 +993,7 @@ function tabAtPoint(x,y){let best=null,bd=1e9;$("#tabs").querySelectorAll("butto
   n.addEventListener("pointerup",end);n.addEventListener("pointercancel",end);
   addEventListener("resize",()=>requestAnimationFrame(tabInd))})();
 /* un campo che perde il fuoco mentre la vista viene ridisegnata salva e chiede un nuovo disegno: lo si fa dopo, non dentro */
-function render(){if(render.busy){render.again=1;return}render.busy=1;try{renderNow()}finally{render.busy=0}if(render.again){render.again=0;render()}}
+function render(){if(render.busy){render.again=1;return}render.busy=1;try{renderNow()}finally{render.busy=0;const v=document.getElementById("view"),h=document.querySelector("header.bar");if(v&&h)h.classList.toggle("scrolled",v.scrollTop>4)}if(render.again){render.again=0;render()}}
 function renderNow(){
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-current",String(b.dataset.tab===state.tab&&!state.paz)));requestAnimationFrame(tabInd);
   $("#tabs").hidden=!!(state.paz||state.stima)&&!wide();
@@ -3377,7 +3426,23 @@ async function syncDisconnect(){confirmSheet("Scollegare questo dispositivo?","I
    a ogni sincronizzazione si scarica l'archivio, si applicano i record più recenti e si caricano quelli modificati qui. */
 const GD_WEB="587305365031-7c7scj84ihsf4s3il7h4fpbre53cohcs.apps.googleusercontent.com";
 const GD_SCOPE="https://www.googleapis.com/auth/drive.appdata",GD_FILE="nutridesk-archivio.json",GD_API="https://www.googleapis.com";
-const GD={tok:null,exp:0,need:false};
+const GD={tok:null,exp:0,need:false,rt:null};
+/* Sportello (Cloudflare Worker) che rinnova l'accesso a Drive senza finestre su PC e iPhone: vuoto = vecchio sistema (rinnovo a mano ogni ora circa).
+   Dallo sportello passano solo i permessi di Google, mai i dati: l'archivio cifrato va dal dispositivo direttamente a Drive. */
+const GD_BROKER="https://dietdesk-accesso.delaurentis-dietista.workers.dev";
+const gdBroker=()=>!!GD_BROKER&&!isNative()&&!gdNoBroker();
+/* se lo sportello non risponde o non è configurato, per questa sessione si torna all'accesso classico (rinnovo a mano) */
+const gdNoBroker=()=>{try{return sessionStorage.getItem("nd_nobroker")==="1"}catch(e){return false}};
+const gdBrokerOff=()=>{try{sessionStorage.setItem("nd_nobroker","1")}catch(e){}};
+async function gdPost(path,body){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),15000);
+  try{const r=await fetch(GD_BROKER+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:ac.signal,cache:"no-store",credentials:"omit"});let j={};try{j=await r.json()}catch(e){}return{ok:r.ok,status:r.status,j}}
+  finally{clearTimeout(tm)}}
+/* il permesso di lunga durata resta sul dispositivo cifrato con una chiave che non si può esportare */
+async function gdRtKey(){let k=await store.get("kv","gdrtkey").catch(()=>null);if(!k){k=await crypto.subtle.generateKey({name:"AES-GCM",length:256},false,["encrypt","decrypt"]);await store.put("kv",k,"gdrtkey")}return k}
+async function gdRtSave(rt){GD.rt=rt||null;try{if(!rt){await store.put("kv",null,"gdrt");return}const k=await gdRtKey(),iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},k,new TextEncoder().encode(rt)));await store.put("kv",{iv:b64(iv),ct:b64(ct)},"gdrt")}catch(e){}}
+async function gdRtLoad(){if(GD.rt)return GD.rt;try{const x=await store.get("kv","gdrt");if(!x)return null;const k=await gdRtKey();
+  GD.rt=new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:ub64(x.iv)},k,ub64(x.ct)));return GD.rt}catch(e){return null}}
 const gdNative=()=>isNative()&&window.Capacitor.Plugins&&window.Capacitor.Plugins.NDGoogle;
 const gdWebOk=()=>location.protocol==="https:"||location.hostname==="localhost";
 const gdAvailable=()=>!!gdNative()||(!isNative()&&gdWebOk());
@@ -3389,6 +3454,18 @@ async function gdSaveTok(){if(gdNative())return;try{await store.put("kv",{tok:GD
 const gdScopeOk=sc=>!String(sc||"").split(/\s+/).some(x=>/auth\/drive(?!\.appdata\b)/.test(x));
 function gdWebPopup(){
   /* va chiamata senza attese prima, dentro il tocco dell'utente: altrimenti il browser blocca la finestra di Google */
+  if(gdBroker())return new Promise((res,rej)=>{const c=google.accounts.oauth2.initCodeClient({client_id:GD_WEB,scope:GD_SCOPE,ux_mode:"popup",include_granted_scopes:false,
+    /* senza un permesso lungo salvato si chiede di nuovo il consenso, altrimenti Google non lo rilascia */
+    prompt:GD.rt?"":"consent",login_hint:(SY.cfg&&SY.cfg.email)||undefined,
+    callback:async r=>{if(r.error)return rej(new Error(r.error_description||r.error));
+      try{let g;try{g=await gdPost("/exchange",{code:r.code})}catch(e){g={ok:false,status:0,j:{}}}
+        if(!g.ok&&(g.status===0||g.status>=500||g.status===403&&g.j.error==="origin_not_allowed")){gdBrokerOff();throw new Error("servizio di accesso non raggiungibile: tocca di nuovo per usare l'accesso classico")}
+        if(!g.ok)throw new Error(g.j.error==="unexpected_scope"?"permessi di Google non previsti: riprova":"accesso non riuscito ("+(g.j.error||g.status)+")");
+        if(!gdScopeOk(g.j.scope))throw new Error("permessi di Google non previsti: riprova");
+        GD.tok=g.j.access_token;GD.exp=Date.now()+(+g.j.expires_in||3600)*1000;GD.need=false;if(g.j.refresh_token)await gdRtSave(g.j.refresh_token);await gdSaveTok();res(GD.tok)}
+      catch(e){rej(e)}},
+    error_callback:e=>rej(new Error(e&&e.type==="popup_closed"?"finestra di accesso chiusa":e&&e.type==="popup_failed_to_open"?"il browser ha bloccato la finestra di accesso: consenti i popup per questo sito":(e&&e.message)||"accesso non riuscito"))});
+    c.requestCode()});
   return new Promise((res,rej)=>{const c=google.accounts.oauth2.initTokenClient({client_id:GD_WEB,scope:GD_SCOPE,prompt:"",include_granted_scopes:false,login_hint:(SY.cfg&&SY.cfg.email)||undefined,
     callback:r=>{if(r.error)return rej(new Error(r.error_description||r.error));
       if(!gdScopeOk(r.scope)){try{google.accounts.oauth2.revoke(r.access_token,()=>{})}catch(e){}return rej(new Error("permessi di Google non previsti: riprova"))}
@@ -3402,6 +3479,9 @@ async function gdToken(interactive){
   const N=gdNative();
   if(N){try{const r=await N.authorize({interactive:!!interactive});GD.tok=r.accessToken;GD.exp=Date.now()+50*60e3;GD.need=false;await gdSaveTok();return GD.tok}
     catch(e){if(e&&e.code==="NEED_UI"){GD.need=true;throw new Error("serve un nuovo accesso a Google: tocca Ricollega")}throw new Error(e&&e.message||"accesso a Google non riuscito")}}
+  if(gdBroker()){const rt=await gdRtLoad();if(rt){let g=null;try{g=await gdPost("/refresh",{refresh_token:rt})}catch(e){if(!interactive)throw new Error("rinnovo dell'accesso a Google non riuscito: verifica la connessione")}
+    if(g&&g.ok&&gdScopeOk(g.j.scope)){GD.tok=g.j.access_token;GD.exp=Date.now()+(+g.j.expires_in||3600)*1000;GD.need=false;await gdSaveTok();return GD.tok}
+    if(g&&g.j&&g.j.error==="invalid_grant")await gdRtSave(null)}}
   if(!interactive){GD.need=true;throw new Error("accesso a Google scaduto: tocca Ricollega")}
   await gdLoadGis();return gdWebPopup()}
 async function gdFetch(url,opt={},retry=true){
@@ -3596,6 +3676,7 @@ function syncSetup(){
 async function syncDisconnect(){confirmSheet("Scollegare questo dispositivo?","I dati restano su questo dispositivo e su Google Drive, ma da qui non verranno più sincronizzati. Per ricollegarti serviranno di nuovo l'accesso a Google e la passphrase.","Scollega",async()=>{
   try{await store.put("kv",null,"sync");await store.put("kv",null,"synckey");await store.put("kv",[],"syncdirty");await store.put("kv",{},"syncver");await store.put("kv",{},"syncdt");await store.put("kv",null,"gdtok")}catch(e){}
   if(GD.tok&&!gdNative()&&window.google&&google.accounts&&google.accounts.oauth2){try{google.accounts.oauth2.revoke(GD.tok,()=>{})}catch(e){}}
+  if(gdBroker()){const rt=await gdRtLoad();if(rt)gdPost("/revoke",{token:rt}).catch(()=>{});await gdRtSave(null)}
   GD.tok=null;GD.exp=0;SY.cfg=null;SY.key=null;SY.dirty=new Map();SY.ver={};SY.dt={};SY.status="off";rerender();toast("Dispositivo scollegato")})}
 async function gdReconnect(){try{GD.tok=null;GD.exp=0;await gdToken(true);toast("Sincronizzazione…");await syncNow();rerender();toast(SY.status==="err"?"Sincronizzazione non riuscita: "+SY.err:"Sincronizzato")}catch(e){toast(String(e.message||e))}}
 function syncCard(){if(isDrive()&&!gdNative()&&gdWebOk())gdLoadGis().catch(()=>{});
@@ -3613,6 +3694,28 @@ function sheet(html,init,full){
   s.addEventListener("click",e=>{if(e.target===s||e.target.closest("[data-close]"))closeSheet()});
   document.body.appendChild(s);init&&init(s.querySelector(".sheet"));
 }
+/* C'è una tastiera fisica? Su PC con mouse sì. Sui dispositivi touch (PC touch, tablet, telefoni) solo se è collegato
+   un touchpad/mouse (es. la tastiera staccabile di un 2-in-1) o se è appena stato premuto un tasto che le tastiere
+   sullo schermo non hanno, o un tasto qualsiasi fuori da un campo di testo. */
+let KBD_AT=0;
+document.addEventListener("keydown",e=>{const t=e.target,edit=t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+  if(!edit||/^(Escape|Tab|Arrow|F\d|Home|End|PageUp|PageDown|Insert)/.test(e.key)||e.ctrlKey||e.metaKey||e.altKey)KBD_AT=Date.now()},true);
+const hwKeyboard=()=>{if(matchMedia("(pointer:fine)").matches&&!matchMedia("(pointer:coarse)").matches)return true;
+  if(matchMedia("(any-pointer:fine)").matches&&matchMedia("(any-hover:hover)").matches)return true;
+  return Date.now()-KBD_AT<30*60e3};
+/* Qualsiasi foglio aperto spinge indietro la pagina (html.sheeton). Quando un foglio viene tolto, da qualunque punto del codice,
+   lo si rimette per un attimo come copia inerte (.scrimg: senza id, non cliccabile) che scende e toglie velo e sfocatura insieme. */
+new MutationObserver(ms=>{let added=false;const gone=[];
+  for(const m of ms){m.addedNodes.forEach(n=>{if(n.nodeType===1&&n.classList.contains("scrim"))added=true});m.removedNodes.forEach(n=>{if(n.nodeType===1&&n.classList.contains("scrim"))gone.push(n)})}
+  const on=!!document.querySelector(".scrim");document.documentElement.classList.toggle("sheeton",on);
+  /* PC (mouse): nelle finestre con una ricerca il cursore va subito nella casella; sui telefoni no, per non aprire la tastiera */
+  if(added&&hwKeyboard()){const all=document.querySelectorAll(".scrim"),top=all[all.length-1];
+    setTimeout(()=>{if(!top||!top.isConnected||top.contains(document.activeElement)&&document.activeElement!==top)return;const q=top.querySelector('.search input,input[type="search"]');if(q&&!q.disabled&&q.offsetParent!==null)try{q.focus({preventScroll:true})}catch(e){}},40)}
+  if(added||!gone.length||matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  const g=gone[gone.length-1];g.className="scrimg";g.removeAttribute("role");g.setAttribute("aria-hidden","true");g.inert=true;
+  g.querySelectorAll("[id]").forEach(e=>e.removeAttribute("id"));g.querySelectorAll(".unsaved").forEach(e=>e.remove());
+  const sh=g.querySelector(".sheet");if(sh&&sh.style.transform&&/translateY\(100%\)/.test(sh.style.transform)){sh.style.transition="none"}
+  document.body.appendChild(g);g.offsetWidth;requestAnimationFrame(()=>g.classList.add("go"));setTimeout(()=>g.remove(),340)}).observe(document.body,{childList:true});
 /* fogli con modifiche (anagrafica, misure): prima di chiuderli senza salvare si chiede cosa fare */
 function sheetGuard(sc,isDirty,save){sc._dirty=isDirty;sc._save=save}
 function guardOk(sc){if(!sc||!sc._dirty||!sc._dirty())return true;
@@ -3677,7 +3780,7 @@ async function nativeOpen(url){try{const FS=window.Capacitor.Plugins.Filesystem;
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="2.1.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="2.1.1"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
@@ -3687,7 +3790,7 @@ async function updCheck(manual){if(!isNative())return;const P=updPlug();UPD.err=
   if(state.tab==="dati"&&!state.paz&&!state.stima)rerender();
   try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);const r=await fetch(UPD_URL+"?t="+Date.now(),{cache:"no-store",signal:ac.signal});clearTimeout(tm);if(!r.ok)throw new Error("risposta "+r.status);UPD.latest=await r.json();state.kv.opt.updChk=Date.now();saveKV("opt")}
   catch(e){UPD.err="controllo non riuscito ("+(e&&e.message||e)+")";UPD.done=1;if(state.tab==="dati"&&!state.paz&&!state.stima)rerender();if(manual)toast("Controllo non riuscito: verifica la connessione");return}
-  UPD.done=1;
+  UPD.done=1;updRail();
   if(state.tab==="dati"&&!state.paz&&!state.stima)rerender();
   if(manual&&!updNew())toast(`DietDesk è aggiornato (${APP_VER})`);
   if(!manual&&updNew())updBalloon()}
@@ -3722,12 +3825,19 @@ function updWebCard(){const L=UPD.latest,nw=updNew();
    ${UPD.err?`<p class="over">${esc(UPD.err)}</p>`:""}${nw&&L.note?`<p>${esc(L.note)}</p>`:L&&!nw?`<p class="note">Stai usando l'ultima versione.</p>`:""}
    <div class="actions" style="flex-wrap:wrap">${nw?`<button class="btn primary" id="updwr">Aggiorna ora</button>`:""}<button class="btn" id="updwk">Controlla aggiornamenti</button></div>
    <p class="note" style="margin-bottom:0">I dati restano nel browser: l'aggiornamento ricarica solo il programma. Di solito la web app si aggiorna da sola alla riapertura.</p></div>`}
-async function updWebManual(){UPD.err="";if(location.protocol==="file:"){toast("Controllo disponibile solo dal sito");return}
+async function updWebManual(silent){UPD.err="";if(location.protocol==="file:"){if(!silent)toast("Controllo disponibile solo dal sito");return}
   try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);const r=await fetch(UPD_URL+"?t="+Date.now(),{cache:"no-store",signal:ac.signal});clearTimeout(tm);if(!r.ok)throw new Error("risposta "+r.status);
     const j=await r.json();if(!j||!/^\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(String(j.version)))throw new Error("risposta non valida");UPD.latest=j;
-    toast(updNew()?`È disponibile la ${j.version}`:`DietDesk è aggiornato (${APP_VER})`)}
-  catch(e){UPD.err="Controllo non riuscito ("+(e&&e.message||e)+"): verifica la connessione.";toast("Controllo non riuscito")}
-  if(state.sec==="agg")rerender()}
+    if(!silent)toast(updNew()?`È disponibile la ${j.version}`:`DietDesk è aggiornato (${APP_VER})`)}
+  catch(e){if(silent)return;UPD.err="Controllo non riuscito ("+(e&&e.message||e)+"): verifica la connessione.";toast("Controllo non riuscito")}
+  updRail();if(state.sec==="agg")rerender()}
+document.addEventListener("scroll",e=>{const t=e.target;if(!(t&&t.id==="view"))return;const h=document.querySelector("header.bar");if(h)h.classList.toggle("scrolled",t.scrollTop>4)},true);
+/* tasto "Aggiorna" nella barra laterale (PC e telefono in orizzontale) quando c'è una versione nuova */
+function updRail(){const b=document.getElementById("tabupd");if(!b)return;const on=updNew();b.hidden=!on;if(on)b.title=`È disponibile DietDesk ${UPD.latest.version}: apri Aggiornamenti`;
+  b.onclick=e=>{e.stopPropagation();if(TABDRAG.skip){TABDRAG.skip=false;return}
+    if(state.paz||state.stima){if(state.paz)releasePaz(state.paz);state.paz=null;state.stima=null;state.sec=null;state.tab="dati";history.back();setTimeout(()=>openSec("agg"),60);return}
+    state.tab="dati";if(state.sec==="agg")return render();openSec("agg")}}
+if(!isNative()&&/^https:$/.test(location.protocol)){setTimeout(()=>updWebManual(true),4000);setInterval(()=>{if(!document.hidden)updWebManual(true)},6*3600e3)}
 function updCard(){if(!isNative())return"";const L=UPD.latest,nw=updNew();
   if(updReinstall())return updReinstallHTML()+`<div class="card"><h3>Aggiornamenti</h3><p class="num" style="margin:0">Versione installata: <b>${esc(APP_VER)}</b></p></div>`;
   return `<div class="card"><h3>Aggiornamenti</h3><p class="num">Versione installata: <b>${esc(APP_VER)}</b>${L?` · ultima disponibile: <b>${esc(L.version)}</b>`:UPD.done?"":" · controllo in corso…"}</p>
