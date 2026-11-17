@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-V8mMcXp1lEd0G+miAD1MHH/WJ7GJqd5XFunwPLrJons=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-WhweLiJVfChj73tYNSzSkuydBQ99I+wvbZK4V4JhS1I=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -1413,11 +1413,11 @@ function subsSheet(p,x,back){
      ${cands.length&&!LD?`<div class="field"><label>Sostituisci insieme a</label><div class="quick" id="swith" style="margin:0">${cands.map(v=>`<button type="button" class="pill" data-wi="${esc(v.n)}" aria-pressed="${R.parts.includes(v)}">${esc(v.n)} ${fmt(v.g)}g</button>`).join("")}</div><span class="hint">Per esempio pane + farcitura: le alternative valgono per l'insieme e in stampa compaiono una volta sola.</span></div>`:""}
      ${GS.length?`<div class="field"><label for="sgrp">Alternative standard</label><select id="sgrp"><option value="">${x.grp?"In uso: "+esc((GS.find(g=>g.id===x.grp)||{nome:"gruppo"}).nome):"Applica un gruppo…"}</option>${GS.map(g=>`<option value="${g.id}">${esc(g.nome)} · ${g.items.length-1} alternative</option>`).join("")}</select><span class="hint">Sostituisce l'elenco qui sotto con le alternative del gruppo.</span></div>`:""}
      <div class="field"><label for="smode">Equivalenza generale</label><select id="smode">${ALT_MODES.map(([k,l])=>`<option value="${k}"${k===mode?" selected":""}>${l}</option>`).join("")}</select><span class="hint">Vale per le alternative impostate su "Come generale"; ogni riga può averne una sua. Le grammature si ricalcolano se cambi i grammi del riferimento.</span></div>
-     <div class="head" style="margin:4px 0 2px"><div class="label" style="margin:0">Sostituzioni (${S.length})</div>${S.length?`<button type="button" class="btn small" id="scopy">Copia su altri alimenti…</button>`:""}</div>
+     <div class="label" style="margin:4px 0 6px">Sostituzioni (${S.length})</div><div style="display:flex;gap:6px;margin:0 0 6px"><button type="button" class="btn small" id="ssrc" style="flex:1">Cerca alimento…</button>${S.length?`<button type="button" class="btn small" id="scopy" style="flex:1">Copia su altri…</button>`:""}</div>
      ${S.map((z,i)=>`<div class="ingrow subrow"><span style="min-width:0;overflow-wrap:anywhere"><b>${esc(z.n)}</b>${recTag(z.f)}${z.f?warnTag(z.f):""}<br><span class="note" style="margin:0">${z.f&&z.g?cmp(z.f,z.g):z.f?`non calcolabile con l'equivalenza ${altModeLabel(z.mode).toLowerCase()}`:"non in archivio"}</span>${(z.plus||[]).map((q,j)=>`<br><span class="plusq">+ ${esc(q.n)} <input class="plusg" data-pg="${i}:${j}" inputmode="decimal" value="${fmt(q.g)}" aria-label="Grammi di ${esc(q.n)}">g <button type="button" class="linkx" data-px="${i}:${j}" aria-label="Togli ${esc(q.n)}">✕</button></span>`).join("")}<br>${rowMode(z,i)} <button type="button" class="btn small" data-pa="${i}">+ abbina</button></span><b class="num">${z.g?fmt(z.g)+"g":"–"}</b><button class="iconbtn" data-sx="${i}" aria-label="Rimuovi ${esc(z.n)}" style="width:36px;height:36px">${I.x}</button></div>`).join("")||`<p class="note">Nessuna sostituzione.</p>`}
      <div class="label" style="margin:14px 0 4px">Aggiungi dal database</div>
      ${sugg.length?`<div class="subpick">${sugg.map(([l,L])=>`<div class="note" style="margin:6px 0 2px;font-weight:600">${l}</div>${L.map(z=>`<label class="pd-o subchk"><input type="checkbox" data-pk="${esc(key(z.f.n))}" data-pn="${esc(z.f.n)}"${pick.has(key(z.f.n))?" checked":""}><span><b>${esc(z.f.n)}</b>${recTag(z.f)}${warnTag(z.f)} <span class="num note" style="margin:0">${fmt(z.g)}g · ${fmt(val(z.f,"KCAL",z.g))}kcal</span></span></label>`).join("")}`).join("")}</div>`:`<p class="note">Nessun suggerimento con questa equivalenza.</p>`}
-     <div class="actions" style="flex-wrap:wrap;margin-top:8px"><button type="button" class="btn" id="ssrc">Cerca alimento o ricetta…</button><button type="button" class="btn primary" id="sadd"${pick.size?"":" disabled"}>Aggiungi le selezionate${pick.size?` (${pick.size})`:""}</button></div>`;
+     <div class="actions" style="flex-wrap:wrap;margin-top:8px"><button type="button" class="btn primary" id="sadd"${pick.size?"":" disabled"}>Aggiungi le selezionate${pick.size?` (${pick.size})`:""}</button></div>`;
     s.querySelector("#smode").onchange=e=>{x.sm=e.target.value;delete x.grp;(x.sost||[]).forEach(z=>delete z.r);savePaz(p);draw(s)};
     const sw=s.querySelector("#swith");if(sw)sw.onclick=e=>{const b=e.target.closest("[data-wi]");if(!b)return;const n=b.dataset.wi,W=x.with||[];
       x.with=W.some(k=>key(k)===key(n))?W.filter(k=>key(k)!==key(n)):[...W,n];if(!x.with.length)delete x.with;(x.sost||[]).forEach(z=>delete z.r);delete x.grp;savePaz(p);draw(s)};
@@ -3462,7 +3462,7 @@ async function nativeOpen(url){try{const FS=window.Capacitor.Plugins.Filesystem;
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="2.0.3"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="2.0.4"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
@@ -3798,6 +3798,25 @@ function pedChart(ref,m,sex,yrs,y,low){const rg=pedRange(ref,m,sex);if(!rg)retur
    ${L.map((arr,i)=>{const last=arr.filter(v=>v!=null).pop();return `<path d="${path(arr)}" class="${i===mid?"c m":"c"}"/>${last!=null?`<text x="${Wd-r+3}" y="${Y(last)+3}" class="pl">${P[i]}°</text>`:""}`}).join("")}
    ${y!=null&&yrs>=a0-.01&&yrs<=a1+.01?`<circle cx="${X(yrs)}" cy="${Y(y)}" r="4.5" class="pt"/>`:""}
    <text x="${Wd-r}" y="${Ht-2}" text-anchor="end" class="ax">anni</text></svg>`}
+/* età staturale e ponderale: età alla quale la misura del bambino corrisponde alla mediana (50° percentile) della curva;
+   peso atteso: peso mediano all'età staturale. Su curva dei sani (l'ultima scelta, WHO all'inizio) e, se scelta, sulla curva per condizione. */
+function pedSaniRef(){const r=BMI.ref||"who";if(PED_REF[r]&&PED_REF[r].g===0)return r;try{const x=localStorage.getItem("nd_pedref_sani");if(x&&PED_REF[x]&&PED_REF[x].g===0)return x}catch(e){}return"who"}
+const pedMed=(ref,m,sex,a)=>{const c=pedAt(ref,m,sex,a);return c?pedVal(c,0):null};
+function pedAgeAtMedian(ref,m,sex,y){const rg=pedRange(ref,m,sex);if(!rg||!(y>0))return null;const[a0,a1]=rg,st=1/48;let pa=a0,pv=pedMed(ref,m,sex,a0);if(pv==null)return null;
+  if(y<pv)return{below:a0};
+  for(let a=a0+st;a<=a1+1e-9;a+=st){const v=pedMed(ref,m,sex,Math.min(a,a1));if(v==null)continue;if(v>=y){const t=v>pv?(y-pv)/(v-pv):0;return{age:pa+t*(Math.min(a,a1)-pa)}}pa=Math.min(a,a1);pv=v}
+  return{above:a1}}
+const yTxt=a=>{const mo=Math.round(a*12),y=Math.floor(mo/12),m=mo%12;return y<1?`${mo} ${mo===1?"mese":"mesi"}`:`${y} ${y===1?"anno":"anni"}${m?` e ${m} ${m===1?"mese":"mesi"}`:""}`};
+function pedAgeTxt(r,cur){if(!r)return null;if(r.below!=null)return`sotto la mediana di ${yTxt(r.below)} (inizio della curva)`;if(r.above!=null)return`oltre la mediana di ${yTxt(r.above)} (fine della curva)`;
+  const d=r.age-cur,ad=Math.abs(d);return`<b>${esc(yTxt(r.age))}</b>${ad<1/24?" · come l'età anagrafica":` · ${esc(yTxt(ad))} ${d<0?"in meno":"in più"}`}`}
+function pedAgesHTML(R){if(!R.hasH&&!R.hasW)return"";const sex=BMI.sesso,refs=[pedSaniRef()];if(PED_REF[R.ref].g===1)refs.push(R.ref);
+  const rows=refs.map(r=>{const ha=R.hasH?pedAgeAtMedian(r,"h",sex,R.H):null,wa=R.hasW?pedAgeAtMedian(r,"w",sex,num(BMI.peso)):null;
+    const pa=ha&&ha.age!=null?pedMed(r,"w",sex,ha.age):null;
+    const L=[];if(R.hasH)L.push(`<div>Età staturale: ${pedAgeTxt(ha,R.yrs)||"curva senza statura"}</div>`);
+    if(R.hasH)L.push(`<div>Peso atteso per l'età staturale: ${pa!=null?`<b>${fmt(pa,1)}kg</b>`:ha&&ha.age!=null?`non disponibile (la curva non ha il peso a ${esc(yTxt(ha.age))})`:"—"}</div>`);
+    if(R.hasW)L.push(`<div>Età ponderale: ${pedAgeTxt(wa,R.yrs)||(r==="who"&&R.yrs>=10?"la WHO non ha il peso oltre i 10 anni":"curva senza peso")}</div>`);
+    return`<div style="margin:6px 0"><div class="note" style="margin:0 0 2px;font-weight:600">${esc(PED_REF[r].n)}</div><div class="num" style="line-height:1.6">${L.join("")}</div></div>`}).join("");
+  return`<div class="label" style="margin:14px 0 2px">Età staturale e ponderale</div>${rows}<p class="note" style="margin:2px 0 0">Età alla quale statura e peso del bambino sono al 50° percentile. Il peso atteso è il peso al 50° percentile per l'età staturale.</p>`}
 function bmiResultHTML(){const R=bmiCalc();if(R.need)return `<div class="card"><p class="note" style="margin:0">${esc(R.need)}</p></div>`;
   const tone=t=>t==="ok"?"var(--ok,#2e7d32)":t==="warn"?"var(--warn,#b26a00)":"var(--bad,#c62828)";
   if(R.kind==="adult"){const pos=Math.max(0,Math.min(100,(R.bmi-15)/30*100));
@@ -3827,6 +3846,7 @@ function bmiResultHTML(){const R=bmiCalc();if(R.need)return `<div class="card"><
     ${io?`<p class="num" style="margin:8px 0 0">IOTF (Cole e Lobstein 2012): <b style="color:${tone(io.tone)}">${esc(io.cl)}</b> · sovrappeso da <b>${fmt(io.cut[3],1)}</b>, obesità da <b>${fmt(io.cut[4],1)}</b>, magrezza sotto <b>${fmt(io.cut[2],1)}</b></p>`:""}
     ${ref==="who"&&B?`<div class="label" style="margin:12px 0 4px">BMI per età</div><div class="bmibar${R.u5?" u5":" o5"}" aria-hidden="true"><i style="left:${(Math.max(-3.5,Math.min(3.5,B.z))+3.5)/7*100}%"></i></div>
     ${bmiAx([-3,-2,-1,0,1,2,3],v=>(v+3.5)/7*100,v=>v>0?"+"+v:v<0?"−"+(-v):"0")}<div class="note" style="margin:2px 0 0;text-align:center">z-score (deviazioni standard dalla mediana)</div>`:""}
+    ${pedAgesHTML(R)}
     <div class="label" style="margin:14px 0 6px">Grafico</div>
     <div class="seg" id="bgm" style="margin:0 0 6px;font-size:14px">${[["h","Statura"],["w","Peso"],["b","BMI"]].map(([k,l])=>`<button data-gm="${k}" aria-pressed="${gm===k}">${l}</button>`).join("")}</div>
     ${pedRange(gref,gm,BMI.sesso)?pedChart(gref,gm,BMI.sesso,R.yrs,gx?gx.v:null):`<p class="note">Questa curva non ha ${gm==="b"?"il BMI":gm==="w"?"il peso":"la statura"}.</p>`}
@@ -3880,7 +3900,7 @@ function viewBmi(){if(!BMI.ref)BMI.ref=pedRefSel();const d0=bmiAgeDays(),y0=d0!=
   calcSegBind();decorateDates($("#view"));
   const bindRes=()=>{const g=$("#bgm");if(g)g.onclick=e=>{const b=e.target.closest("[data-gm]");if(!b)return;BMI.gm=b.dataset.gm;$("#bres").innerHTML=bmiResultHTML();bindRes()}};
   const upd=()=>{BMI.sesso=$("#bsx").value;BMI.peso=$("#bpe").value;BMI.alt=$("#bal").value;BMI.nasc=$("#bna").value.trim();BMI.anni=$("#ban").value;BMI.mesi=$("#bme").value;BMI.data=$("#bdt").value.trim();BMI.pos=$("#bpo").value;if($("#btg"))BMI.target=$("#btg").value;
-    const rf=$("#brf").value;if(rf!==BMI.ref){BMI.ref=rf;try{localStorage.setItem("nd_pedref",rf)}catch(e){}$("#brfd").textContent=PED_REF[rf].d}
+    const rf=$("#brf").value;if(rf!==BMI.ref){BMI.ref=rf;try{localStorage.setItem("nd_pedref",rf);if(PED_REF[rf].g===0)localStorage.setItem("nd_pedref_sani",rf)}catch(e){}$("#brfd").textContent=PED_REF[rf].d}
     $("#ban").disabled=$("#bme").disabled=!!BMI.nasc;const d=bmiAgeDays(),y=d!=null&&!Number.isNaN(d)?d/365.25:null;$("#bposw").hidden=!(y!=null&&y<5&&BMI.ref==="who");$("#brfw").hidden=!(y==null||y<20);
     $("#bres").innerHTML=BMI.mode==="bmi"?bmiResultHTML():bmiInvHTML();bindRes();
     const q=$("#btq");if(q){const k=JSON.stringify(bmiInvTargets());if(q.dataset.k!==k){q.dataset.k=k;q.innerHTML=bmiInvTargets().map(([v,l])=>`<button class="pill" data-bt="${v}">${l}</button>`).join("")}}};
