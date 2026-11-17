@@ -1,1 +1,1 @@
-{"version": "2.0.1", "apk": "apk/DietDesk-2.0.1.apk", "sha256": "1a091cf739e09a3588975677e9b5dd4eac0117d9304d71cd4beed67e27a08d17", "reinstall": true, "reinstallBelow": "2.0.0", "note": "Ricette tra le sostituzioni e copia delle sostituzioni scegliendo giorno, pasto e alimento."}
+{"version": "2.0.2", "apk": "apk/DietDesk-2.0.2.apk", "sha256": "", "reinstall": true, "reinstallBelow": "2.0.0", "note": "Sostituzioni, ingredienti e gruppi: più alimenti insieme con la spunta, ricerca per categoria."}
