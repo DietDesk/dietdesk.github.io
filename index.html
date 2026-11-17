@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-e2a3NK71p+iPczD+I727mnbBLdMkl7Mpp3M8QcNCn/k=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-zd6yiIa9TSAy38h+4TLOp6LBlME02sNHBMSWlA3kxFg=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -93,6 +93,7 @@ nav.tabs button[aria-current="true"]{color:var(--accent);font-weight:650}
 .subrow{grid-template-columns:minmax(0,1fr) auto 36px;align-items:start}.subrow select.smrow{margin-top:4px;font-size:13px;padding:4px 6px;height:auto;width:auto;max-width:100%}
 .subpick{max-height:38vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;padding:4px 10px}.subchk{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line);margin:0}.subchk:last-child{border-bottom:0}.subchk input{margin-top:3px;flex:none}
 .tag.rec{background:#fdf0d5;color:#8a5a00;border:0;font-size:11px;padding:1px 6px;border-radius:6px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.pkrow{cursor:pointer}.pkrow>input{width:20px;height:20px;flex:none;accent-color:var(--accent)}.pkrow:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}.pkcat{font-size:12px;font-weight:700;color:var(--ink-3);margin:8px 2px -2px}.pktree>summary{align-items:center}
 .ctree{border:1px solid var(--line);border-radius:12px;margin:0 0 6px;overflow:hidden}.ctree>summary{list-style:none;cursor:pointer;padding:10px 12px;display:flex;justify-content:space-between;gap:8px;font-weight:600}
 .ctree>summary::-webkit-details-marker{display:none}.ctree>summary:before{content:"▸";color:var(--ink-2);margin-right:6px;transition:transform .15s;display:inline-block}.ctree[open]>summary:before{transform:rotate(90deg)}
 .ctree>summary>span:first-child{flex:1}.ctree .cnt{color:var(--accent);font-weight:700;white-space:nowrap}.ctm{margin:0 8px 6px 18px;border-radius:10px}.ctm>summary{font-weight:500;padding:8px 10px}.ctf{padding:0 10px 4px 26px}
@@ -1324,7 +1325,7 @@ function searchFoods(q,filter,limit=80){
 }
 function recent(){try{return JSON.parse(localStorage.getItem("nd_recent")||"[]")}catch(e){return[]}}
 function pushRecent(n){try{const r=recent().filter(x=>key(x)!==key(n));r.unshift(n);localStorage.setItem("nd_recent",JSON.stringify(r.slice(0,40)))}catch(e){}}
-const foodRow=f=>`<button class="row" data-n="${esc(f.n)}"><span class="main"><span class="t">${esc(f.n)}${state.paz?warnTag(f):""}</span><span class="s">${f.o==="s"?esc(DB.cats[f.c]||""):`<span class="tag p">${ORIG[f.o]}</span>`}</span></span><span class="k num">${fmt(f.v[CI.KCAL])}kcal<br>/100g</span></button>`;
+const foodRow=f=>`<button class="row" data-n="${esc(f.n)}"><span class="main"><span class="t">${esc(f.n)}${state.paz?warnTag(f):""}</span><span class="s">${f.o==="s"?esc(DB.cats[f.c]||""):`<span class="tag p">${ORIG[f.o]}</span>${f.o!=="r"&&f.c!=="50"&&DB.cats[f.c]?" "+esc(DB.cats[f.c]):""}`}</span></span><span class="k num">${fmt(f.v[CI.KCAL])}kcal<br>/100g</span></button>`;
 function pickFood(cb){
   sheet(`<h2>Scegli alimento</h2><div class="search">${I.search}<input id="qf" type="search" placeholder="Cerca: pasta, yogurt greco…" autocomplete="off"></div>
    <div class="pills" id="pf">${[["tutti","Tutti"],["rec","Recenti"],["pers","Personali"],["ric","Ricette"],["crea","CREA"]].map(([k,l])=>`<button class="pill" data-f="${k}" aria-pressed="${k===pickFilter}">${l}</button>`).join("")}</div>
@@ -1403,9 +1404,10 @@ function subsSheet(p,x,back){
     sa.onclick=()=>{if(!pick.size)return;x.sost=x.sost||[];let n=0;
       s.querySelectorAll("[data-pk]").forEach(c=>{if(!pick.has(c.dataset.pk))return;const f=food(c.dataset.pn);if(f&&!x.sost.some(z=>key(z.n)===key(f.n))){x.sost.push({n:f.n});n++}});
       pick.clear();delete x.grp;savePaz(p);draw(s);toast(n===1?"1 sostituzione aggiunta":n+" sostituzioni aggiunte")};
-    s.querySelector("#ssrc").onclick=()=>pickFoodInline((f=>{if(!f)return draw(s);if(key(f.n)===key(x.n))return toast("È lo stesso alimento");
-      if(mode!=="PESO"&&!(f.v[CI[mode]]>0))toast(`${f.n} non contiene ${lab(mode)[0].toLowerCase()}: imposta un'altra equivalenza per questa riga`);
-      x.sost=x.sost||[];if(!x.sost.some(z=>key(z.n)===key(f.n)))x.sost.push({n:f.n});delete x.grp;savePaz(p);draw(s)}),{recipes:true});
+    s.querySelector("#ssrc").onclick=()=>pickFoodInline((L=>{if(!L)return draw(s);x.sost=x.sost||[];let n=0;const no=[];
+      L.forEach(f=>{if(key(f.n)===key(x.n))return;if(mode!=="PESO"&&!(f.v[CI[mode]]>0))no.push(f.n);if(!x.sost.some(z=>key(z.n)===key(f.n))){x.sost.push({n:f.n});n++}});
+      if(no.length)toast(`${no.join(", ")}: ${no.length===1?"non contiene":"non contengono"} ${lab(mode)[0].toLowerCase()}, imposta un'altra equivalenza per ${no.length===1?"questa riga":"queste righe"}`);else toast(n===1?"1 sostituzione aggiunta":n+" sostituzioni aggiunte");
+      delete x.grp;savePaz(p);draw(s)}),{recipes:true,multi:true,title:"Aggiungi sostituzioni"});
     const cp=s.querySelector("#scopy");if(cp)cp.onclick=()=>copySubsSheet(p,x,()=>subsSheet(p,x,back))};
   sheet(`<h2>Sostituzioni</h2><div class="scroll" id="sb"></div><div class="actions" style="margin-top:10px"><button class="btn primary" id="sok">Fatto</button></div>`,s=>{draw(s);s.querySelector("#sok").onclick=()=>{closeSheet();back&&back()}},true);
 }
@@ -2278,9 +2280,10 @@ function editAlt(G0){
      s.querySelectorAll("[data-ig]").forEach(inp=>inp.onchange=()=>{sv();const i=+inp.dataset.ig,x=num(inp.value);if(i===0){if(x>0)G.items[0].g=x}else if(x>0)G.items[i].g=x;else delete G.items[i].g;draw()});
      s.querySelectorAll("[data-ix]").forEach(b=>b.onclick=()=>{sv();const i=+b.dataset.ix;G.items.splice(i,1);if(i===0&&G.items[0]){const f=food(G.items[0].n);G.items[0].g=G.items[0].g||((portionsFor(f)[0]||{}).g)||100}draw()});
      s.querySelectorAll("[data-top]").forEach(b=>b.onclick=()=>{sv();const i=+b.dataset.top,it=G.items[i],g=Math.round(altBase(G,it)||100);G.items.forEach(x=>{if(x!==G.items[0])delete x.g});G.items.splice(i,1);G.items.unshift({n:it.n,g});draw()});
-     s.querySelector("#aadd").onclick=()=>{sv();pickFoodInline(f=>{if(!f)return;if(G.items.some(i=>key(i.n)===key(f.n)))return toast("È già nel gruppo");
-       if(G.mode!=="PESO"&&G.items.length&&!(f.v[CI[G.mode]]>0))return toast(`${f.n} non contiene ${lab(G.mode)[0].toLowerCase()}: con questa equivalenza non si può calcolare`);
-       G.items.push(G.items.length?{n:f.n}:{n:f.n,g:((portionsFor(f)[0]||{}).g)||100});draw()})}};
+     s.querySelector("#aadd").onclick=()=>{sv();pickFoodInline(L=>{if(!L)return;const no=[];
+       L.forEach(f=>{if(G.items.some(i=>key(i.n)===key(f.n)))return;if(G.mode!=="PESO"&&G.items.length&&!(f.v[CI[G.mode]]>0))return no.push(f.n);
+         G.items.push(G.items.length?{n:f.n}:{n:f.n,g:((portionsFor(f)[0]||{}).g)||100})});
+       if(no.length)toast(`Non aggiunti (senza ${lab(G.mode)[0].toLowerCase()}): ${no.join(", ")}`);draw()},{multi:true,title:"Aggiungi al gruppo"})}};
    draw();
    if(!isNew)s.querySelector("#adel").onclick=()=>confirmSheet("Eliminare "+G.nome+"?","Il gruppo viene rimosso. Le alternative già presenti nelle diete restano.","Elimina",async()=>{state.kv.alt=altGroups().filter(x=>x.id!==G.id);await saveKV("alt");rerender()});
    s.querySelector("#aok").onclick=async()=>{G.nome=s.querySelector("#an").value.trim();if(!G.nome)return toast("Dai un nome al gruppo");if(G.items.length<2)return toast("Servono almeno 2 alimenti");
@@ -2551,7 +2554,7 @@ function editRecipe(r){
      rb.querySelectorAll("[data-ig]").forEach(e=>e.onchange=()=>{const x=num(e.value);if(x>0){ing[+e.dataset.ig].g=x;draw()}});
      rb.querySelectorAll("[data-ix]").forEach(e=>e.onclick=()=>{ing.splice(+e.dataset.ix,1);draw()});
      rb.querySelector("#rr").onchange=e=>{resa=num(e.target.value);draw()};rb.querySelector("#rp").onchange=e=>{porz=num(e.target.value);draw()};
-     rb.querySelector("#riadd").onclick=()=>pickFoodInline(f=>{if(f){ing.push({n:f.n,g:(portionsFor(f)[0]||{g:100}).g});draw()}});
+     rb.querySelector("#riadd").onclick=()=>pickFoodInline(L=>{if(L){L.forEach(f=>{if(!ing.some(i=>key(i.n)===key(f.n)))ing.push({n:f.n,g:(portionsFor(f)[0]||{g:100}).g})});draw()}},{multi:true,title:"Aggiungi ingredienti"});
    };
    draw();
    s.querySelector("#rsave").onclick=async()=>{nome=nome.trim();if(!nome)return toast("Dai un nome alla ricetta");if(!ing.length)return toast("Aggiungi almeno un ingrediente");
@@ -2562,14 +2565,35 @@ function editRecipe(r){
      closeSheet();rerender();toast("Ricetta salvata")};
   },true);
 }
-function pickFoodInline(cb,opt){opt=opt||{};
+/* ordine delle categorie nel selettore: tabelle 01-18, poi personali (50) e ricette (60) */
+const catOrder=()=>Object.keys(DB.cats).sort((a,b)=>(+a>=50)-(+b>=50)||+a-+b);
+function pickFoodInline(cb,opt){opt=opt||{};const multi=!!opt.multi,sel=new Map();let flt="tutti";const openCats=new Set();
+  const ok=f=>opt.recipes||f.o!=="r";
   const s=document.createElement("div");s.className="scrim";s.style.zIndex=30;
-  s.innerHTML=`<div class="sheet full" role="dialog" aria-modal="true"><div class="grabzone" aria-hidden="true"><div class="grab"></div></div><button type="button" class="sheetx" aria-label="Chiudi">${I.x}</button><h2>${opt.recipes?"Alternativa":"Ingrediente"}</h2><div class="search">${I.search}<input id="qi" type="search" placeholder="${opt.recipes?"Cerca alimento o ricetta":"Cerca ingrediente"}" autocomplete="off"></div><div class="scroll"><div class="list" id="il"></div></div><div class="actions" style="margin-top:10px"><button class="btn" id="ic">Annulla</button></div></div>`;
-  document.body.appendChild(s);const q=s.querySelector("#qi");
-  const draw=()=>{s.querySelector("#il").innerHTML=searchFoods(q.value,"tutti").filter(f=>opt.recipes||f.o!=="r").map(foodRow).join("")};draw();q.oninput=draw;
+  s.innerHTML=`<div class="sheet full" role="dialog" aria-modal="true"><div class="grabzone" aria-hidden="true"><div class="grab"></div></div><button type="button" class="sheetx" aria-label="Chiudi">${I.x}</button><h2>${opt.title||(opt.recipes?"Alternativa":"Ingrediente")}</h2><div class="search">${I.search}<input id="qi" type="search" placeholder="${opt.recipes?"Cerca alimento o ricetta":"Cerca ingrediente"}" autocomplete="off"></div>
+   <div class="pills" id="ipf">${[["tutti","Per categoria"],["rec","Recenti"],["pers","Personali"],...(opt.recipes?[["ric","Ricette"]]:[])].map(([k,l])=>`<button type="button" class="pill" data-f="${k}" aria-pressed="${k===flt}">${l}</button>`).join("")}</div>
+   <div class="scroll"><div class="list" id="il"></div></div><div class="actions" style="margin-top:10px"><button class="btn" id="ic">Annulla</button>${multi?`<button class="btn primary" id="iok" disabled>Aggiungi</button>`:""}</div></div>`;
+  document.body.appendChild(s);const q=s.querySelector("#qi"),il=s.querySelector("#il");
+  const row=f=>multi?`<label class="row pkrow"><input type="checkbox" data-pn="${esc(f.n)}"${sel.has(key(f.n))?" checked":""}>${foodRow(f).replace(/^<button class="row" data-n="[^"]*">/,"").replace(/<\/button>$/,"")}</label>`:foodRow(f);
+  const grouped=L=>{const by={};L.forEach(f=>(by[f.c]=by[f.c]||[]).push(f));return catOrder().filter(c=>by[c]).map(c=>`<div class="pkcat">${esc(DB.cats[c])}</div>${by[c].map(row).join("")}`).join("")};
+  const tree=()=>{const by={};FOODS.forEach(f=>{if(ok(f))(by[f.c]=by[f.c]||[]).push(f)});
+    return catOrder().filter(c=>by[c]).map(c=>{const n=by[c].filter(f=>sel.has(key(f.n))).length;return `<details class="ctree pktree" data-cat="${c}"${openCats.has(c)?" open":""}><summary><span>${esc(DB.cats[c])}</span><span class="note" style="margin:0">${by[c].length}</span>${n?`<span class="cnt">✓ ${n}</span>`:""}</summary><div class="list" style="margin:0 8px 8px">${openCats.has(c)?by[c].map(row).join(""):""}</div></details>`}).join("")};
+  const draw=()=>{const qq=q.value.trim();let h;
+    if(flt==="tutti"&&!qq)h=tree();
+    else{const L=searchFoods(qq,flt,flt==="tutti"?150:2000).filter(ok);h=L.length?(flt==="rec"?L.map(row).join(""):grouped(L)):`<div class="empty"><b>Nessun alimento trovato</b></div>`}
+    il.innerHTML=h;
+    il.querySelectorAll(".pktree").forEach(d=>d.ontoggle=()=>{const c=d.dataset.cat;if(d.open){openCats.add(c);const box=d.querySelector(".list");if(!box.children.length){box.innerHTML=FOODS.filter(f=>f.c===c&&ok(f)).map(row).join("")}}else openCats.delete(c)})};
+  const upd=()=>{if(!multi)return;const b=s.querySelector("#iok");b.disabled=!sel.size;b.textContent=sel.size?`Aggiungi ${sel.size} ${sel.size===1?"alimento":"alimenti"}`:"Aggiungi"};
+  draw();q.oninput=draw;
+  s.querySelector("#ipf").onclick=e=>{const b=e.target.closest("[data-f]");if(!b)return;flt=b.dataset.f;s.querySelectorAll("#ipf .pill").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));draw()};
   const done=f=>{s.remove();cb(f)};
-  s.querySelector("#ic").onclick=()=>done(null);s.onclick=e=>{if(e.target===s)done(null)};
-  s.querySelector("#il").onclick=e=>{const b=e.target.closest("[data-n]");if(b)done(food(b.dataset.n))};
+  s.querySelector("#ic").onclick=()=>done(null);s.querySelector(".sheetx").onclick=()=>done(null);s.onclick=e=>{if(e.target===s)done(null)};
+  if(multi){il.onchange=e=>{const c=e.target.closest("input[data-pn]");if(!c)return;const k=key(c.dataset.pn);if(c.checked)sel.set(k,c.dataset.pn);else sel.delete(k);
+      il.querySelectorAll(`input[data-pn]`).forEach(x=>{if(key(x.dataset.pn)===k)x.checked=c.checked});
+      const d=c.closest(".pktree");if(d){const n=[...sel.keys()].filter(k2=>{const f=food(sel.get(k2));return f&&f.c===d.dataset.cat}).length,sm=d.querySelector("summary");let ct=sm.querySelector(".cnt");if(n){if(!ct){ct=document.createElement("span");ct.className="cnt";sm.appendChild(ct)}ct.textContent="✓ "+n}else if(ct)ct.remove()}
+      upd()};
+    s.querySelector("#iok").onclick=()=>{const L=[...sel.values()].map(food).filter(Boolean);if(L.length){L.forEach(f=>pushRecent(f.n));done(L)}}}
+  else il.onclick=e=>{const b=e.target.closest("[data-n]");if(b){pushRecent(b.dataset.n);done(food(b.dataset.n))}};
 }
 
 /* ═════════ modelli ═════════ */
@@ -3407,7 +3431,7 @@ async function nativeOpen(url){try{const FS=window.Capacitor.Plugins.Filesystem;
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="2.0.1"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="2.0.2"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
