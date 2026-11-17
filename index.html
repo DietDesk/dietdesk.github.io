@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-lTN4cWS2Mz80ciDu1SLUJwKq+l+3w92c3csSUvip9X8=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk-accesso.delaurentis-dietista.workers.dev https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-ltOFDPwbTRYVfwiO3/IQgoDz7dGVUctV152hC2MJSew=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk-accesso.delaurentis-dietista.workers.dev https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -75,9 +75,9 @@ nav.tabs .tabupd{display:none}
 @keyframes updpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
 @media (prefers-reduced-motion:reduce){nav.tabs .tabupd::after{animation:none}}
 @media (min-width:900px), (orientation:landscape) and (max-height:540px) and (min-width:640px){
-  #app{padding-left:calc(92px + env(safe-area-inset-left,0px))}
+  #app{padding-left:calc(100px*var(--zoom,1) + env(safe-area-inset-left,0px))}
   header.bar{min-height:50px;padding-top:calc(env(safe-area-inset-top,0px) + 6px);padding-bottom:6px}
-  nav.tabs{top:0;right:auto;width:calc(92px + env(safe-area-inset-left,0px));flex-direction:column;justify-content:flex-start;gap:6px;border-top:0;border-right:1px solid var(--line);padding:76px 8px 12px calc(8px + env(safe-area-inset-left,0px))}
+  nav.tabs{top:0;right:auto;width:calc(100px*var(--zoom,1) + env(safe-area-inset-left,0px));flex-direction:column;justify-content:flex-start;gap:6px;border-top:0;border-right:1px solid var(--line);padding:76px 8px 12px calc(8px + env(safe-area-inset-left,0px))}
   nav.tabs button{flex:none;padding:10px 0}
   main{padding-bottom:40px}
   .fab{bottom:28px!important}
@@ -215,7 +215,7 @@ body.dropping::after{content:"Rilascia qui per importare (.ppd, .ndiet, .xlsx, .
 .tag.p{background:var(--accent-soft);color:var(--accent)}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:680px;max-height:94%;border-radius:calc(20px*var(--rk,1)) calc(20px*var(--rk,1)) 0 0;display:flex;flex-direction:column;
-  padding:8px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:sheetin var(--sh-t) var(--sh-e) both}
+  padding:8px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:sheetin var(--sh-t) var(--sh-e) backwards}
 .sheet.full{height:94%}
 @media (min-width:900px), (orientation:landscape) and (max-height:540px) and (min-width:640px){.scrim{align-items:center}.sheet{border-radius:calc(20px*var(--rk,1));max-height:92%}.sheet.full{height:92%}}
 @media (orientation:landscape) and (max-height:540px){nav.tabs{padding-top:12px;gap:0;overflow-y:auto}nav.tabs button{padding:6px 0}.sheet{max-height:96%}.sheet.full{height:96%}}
@@ -234,12 +234,13 @@ body.dropping::after{content:"Rilascia qui per importare (.ppd, .ndiet, .xlsx, .
 :root{--sh-t:.36s;--sh-e:cubic-bezier(.2,.85,.25,1);--sh-back:.94}
 @keyframes sheetin{from{transform:translateY(100%)}to{transform:none}}
 @keyframes scrimin{from{background-color:transparent;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}}
-.scrim{animation:scrimin var(--sh-t) ease-out both}
+.scrim{animation:scrimin var(--sh-t) ease-out backwards;background:rgba(0,0,0,calc(.45*var(--shp,1)));-webkit-backdrop-filter:blur(calc(var(--shb,0px)*var(--shp,1)));backdrop-filter:blur(calc(var(--shb,0px)*var(--shp,1)))}
+html.shdrag #app,html.shdrag .scrim{transition:none!important}
 html{background:var(--bg)}
 #app{background:var(--bg);transform-origin:50% 0;transition:transform var(--sh-t) var(--sh-e),border-radius var(--sh-t) var(--sh-e),filter var(--sh-t) ease}
 html.sheeton{background:#050506}html.sheeton body{background:transparent}
-html.sheeton #app{transform:translateY(calc(env(safe-area-inset-top,0px) + 10px)) scale(var(--sh-back));border-radius:calc(22px*var(--rk,1));overflow:hidden}
-.scrimg{position:fixed;inset:0;z-index:19;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;background:rgba(0,0,0,.45);
+html.sheeton #app{transform:translateY(calc((env(safe-area-inset-top,0px) + 10px)*var(--shp,1))) scale(calc(1 - (1 - var(--sh-back))*var(--shp,1)));border-radius:calc(22px*var(--rk,1));overflow:hidden}
+.scrimg{position:fixed;inset:0;z-index:19;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;background:rgba(0,0,0,calc(.45*var(--shp,1)));
   transition:background-color .28s ease-in,-webkit-backdrop-filter .28s ease-in,backdrop-filter .28s ease-in}
 .scrimg .sheet{animation:none;transition:transform .28s cubic-bezier(.4,0,.8,.6),opacity .28s ease-in}
 .scrimg.go{background-color:transparent!important;-webkit-backdrop-filter:blur(0)!important;backdrop-filter:blur(0)!important}
@@ -466,33 +467,37 @@ main{touch-action:pan-y}
 [data-style="vetro"] .seg button{border-radius:999px}
 [data-style="vetro"] .seg button[aria-pressed="true"]{background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.6)}
 [data-style="vetro"] .field input,[data-style="vetro"] .field select,[data-style="vetro"] .field textarea,[data-style="vetro"] .search{border-radius:calc(16px*var(--rk,1));background:var(--glass-strong)}
-[data-style="vetro"] .scrim,[data-style="vetro"] .scrimg{background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+[data-style="vetro"] .scrim{--shb:6px;background:rgba(0,0,0,calc(.28*var(--shp,1)))}[data-style="vetro"] .scrimg{background:rgba(0,0,0,calc(.28*var(--shp,1)));-webkit-backdrop-filter:blur(calc(6px*var(--shp,1)));backdrop-filter:blur(calc(6px*var(--shp,1)))}
 [data-style="vetro"] #app{background:radial-gradient(120% 60% at 0% 0%,var(--accent-soft) 0%,transparent 55%),radial-gradient(90% 50% at 100% 100%,color-mix(in srgb,var(--accent-soft) 70%,transparent) 0%,transparent 60%),var(--bg)}
 [data-style="vetro"] .sheet{background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(30px) saturate(1.6);backdrop-filter:blur(30px) saturate(1.6);border-radius:calc(30px*var(--rk,1)) calc(30px*var(--rk,1)) 0 0;border:1px solid var(--glass-edge);border-bottom:0}
 [data-style="vetro"] .fab{border-radius:calc(22px*var(--rk,1));box-shadow:0 10px 26px color-mix(in srgb,var(--accent) 40%,transparent),inset 0 1px 0 rgba(255,255,255,.35)}
 [data-style="vetro"] .toast{border-radius:calc(22px*var(--rk,1));padding:11px 18px;background:color-mix(in srgb,var(--ink) 82%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 [data-style="vetro"] .tour-card{border-radius:calc(24px*var(--rk,1));background:var(--glass-strong);-webkit-backdrop-filter:blur(24px) saturate(1.6);backdrop-filter:blur(24px) saturate(1.6);border:1px solid var(--glass-edge)}
 [data-style="vetro"] nav.tabs{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));
-  border-radius:calc(32px*var(--rk,1));padding:6px;background:var(--glass);border:1px solid var(--glass-edge);
+  --barR:min(calc(32px*var(--rk,1)),40px);border-radius:var(--barR);padding:max(6px,calc(var(--barR) - 28px));background:var(--glass);border:1px solid var(--glass-edge);
   -webkit-backdrop-filter:blur(26px) saturate(1.8) brightness(1.04);backdrop-filter:blur(26px) saturate(1.8) brightness(1.04);
   box-shadow:0 12px 34px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(0,0,0,.04)}
 [data-style="vetro"] nav.tabs button{padding:7px 0 6px}
 @media (max-width:420px){[data-style="vetro"] nav.tabs{left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));padding:5px}}
-[data-style="vetro"] .tabind{border-radius:calc(26px*var(--rk,1));background:color-mix(in srgb,var(--accent-soft) 75%,rgba(255,255,255,.35));
+[data-style="vetro"] .tabind{border-radius:max(8px,calc(var(--barR,32px) - 6px));background:color-mix(in srgb,var(--accent-soft) 75%,rgba(255,255,255,.35));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.08)}
-@supports (corner-shape:squircle){[data-style="vetro"] .tabind{border-radius:45%;corner-shape:squircle}[data-style="vetro"] .card,[data-style="vetro"] .sheet{corner-shape:squircle}}
+@supports (corner-shape:squircle){[data-style="vetro"] .tabind{border-radius:max(10px,calc(var(--barR,32px) + 4px));corner-shape:squircle}[data-style="vetro"] .card,[data-style="vetro"] .sheet{corner-shape:squircle}}
 [data-style="vetro"] nav.tabs.drag .tabind{transform:scale(1.14);background:rgba(255,255,255,.28);-webkit-backdrop-filter:blur(2px) saturate(2) brightness(1.08);backdrop-filter:blur(2px) saturate(2) brightness(1.08);
   box-shadow:inset 0 1px 1px rgba(255,255,255,.9),inset 0 -2px 4px rgba(0,0,0,.08),0 6px 18px rgba(0,0,0,.18)}
 @media (min-width:900px), (orientation:landscape) and (max-height:540px) and (min-width:640px){
-  [data-style="vetro"] nav.tabs{top:50%;bottom:auto;transform:translateY(-50%);left:calc(12px + env(safe-area-inset-left,0px));right:auto;width:92px;height:auto;max-height:calc(100% - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
-    padding:8px 6px;gap:4px;justify-content:center;overflow-y:auto;scrollbar-width:none}
-  [data-style="vetro"] nav.tabs button{font-size:11.5px;padding:10px 0 9px}
-  [data-style="vetro"] #app{padding-left:calc(112px + env(safe-area-inset-left,0px))}
-  [data-style="vetro"] header.bar{margin-left:calc(-112px - env(safe-area-inset-left,0px));padding-left:calc(120px + env(safe-area-inset-left,0px))}}
+  [data-style="vetro"] nav.tabs{top:50%;bottom:auto;transform:translateY(-50%);left:calc(12px + env(safe-area-inset-left,0px));right:auto;width:calc(100px*var(--zoom,1));height:auto;max-height:calc(100% - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+    padding:max(8px,calc(var(--barR) - 22px)) 6px;gap:4px;justify-content:center;overflow-y:auto;scrollbar-width:none}
+  [data-style="vetro"] nav.tabs button{font-size:calc(11.5px*var(--zoom,1));padding:10px 0 9px}
+  [data-style="vetro"] #app{padding-left:calc(100px*var(--zoom,1) + 20px + env(safe-area-inset-left,0px))}
+  [data-style="vetro"] header.bar{margin-left:calc(-100px*var(--zoom,1) - 20px - env(safe-area-inset-left,0px));padding-left:calc(100px*var(--zoom,1) + 28px + env(safe-area-inset-left,0px))}}
 @media (orientation:landscape) and (max-height:540px) and (min-width:640px){
-  [data-style="vetro"] nav.tabs{gap:0;padding:6px}[data-style="vetro"] nav.tabs button{padding:6px 0 5px}[data-style="vetro"] nav.tabs button svg{width:20px;height:20px}
+  [data-style="vetro"] nav.tabs{gap:0;padding:6px}[data-style="vetro"] nav.tabs button{padding:6px 0 5px}[data-style="vetro"] nav.tabs button svg{width:calc(20px*var(--zoom,1));height:calc(20px*var(--zoom,1))}
   [data-style="vetro"] header.bar{padding-top:calc(env(safe-area-inset-top,0px) + 10px);padding-bottom:22px}[data-style="vetro"] header.bar h1{font-size:22px}}
-main,.sheet .scroll{zoom:var(--zoom,1)}
+main,.sheet>:not(.grabzone),header.bar>*{zoom:var(--zoom,1)}
+.toast{font-size:calc(14px*var(--zoom,1))}.tour-card p{font-size:calc(14.5px*var(--zoom,1))}.tour-m{font-size:calc(13px*var(--zoom,1))}.tour-card b,.tour-h{font-size:calc(15px*var(--zoom,1))}
+nav.tabs button{font-size:calc(clamp(10px,2.85vw,12px)*var(--zoom,1))}nav.tabs button svg{width:calc(22px*var(--zoom,1));height:calc(22px*var(--zoom,1))}
+/* se con il testo grande un'etichetta non sta nel suo tasto, si mostra solo quella della sezione attiva (le altre restano come icona) */
+nav.tabs.lblact button[data-tab]:not([aria-current="true"]){font-size:0;gap:0}nav.tabs.lblact button[aria-current="true"]{flex:2.2 1 0}nav.tabs.actwide button[aria-current="true"]{flex:1.4 1 0}
 /* densità compatta: meno spazio tra righe, schede e campi; i caratteri restano uguali */
 [data-density="compact"] body{line-height:1.35}
 [data-density="compact"] main{padding-top:10px}
@@ -516,7 +521,7 @@ main,.sheet .scroll{zoom:var(--zoom,1)}
 [data-glass="lite"] header.bar{background:var(--bg)}
 [data-glass="lite"] nav.tabs{background:var(--surface)!important}
 [data-glass="lite"] .sheet{background:var(--bg)}
-[data-glass="lite"] .scrim,[data-glass="lite"] .scrimg{background:rgba(0,0,0,.4)}
+[data-glass="lite"] .scrim{--shb:0px;background:rgba(0,0,0,calc(.4*var(--shp,1)))}[data-glass="lite"] .scrimg{background:rgba(0,0,0,calc(.4*var(--shp,1)))}
 [data-glass="lite"] .tour-card{background:var(--surface)}
 [data-glass="lite"] .toast{background:var(--ink)}
 [data-glass="lite"] nav.tabs.drag .tabind{background:var(--accent-soft)}
@@ -975,9 +980,16 @@ function tabIndEl(){const n=$("#tabs");let i=n.querySelector(".tabind");if(!i){i
 function tabIndAt(cx,cy,b){const n=$("#tabs"),i=tabIndEl(),nr=n.getBoundingClientRect(),r=(b||n.querySelector("button[data-tab]")).getBoundingClientRect();
   let lw=0;try{const g=document.createRange(),t=[...(b||n.querySelector("button[data-tab]")).childNodes].filter(x=>x.nodeType===3&&x.textContent.trim()).pop();if(t){g.selectNodeContents(t);lw=g.getBoundingClientRect().width}}catch(e){}
   /* il selettore è largo almeno quanto l'etichetta (es. "Impostazioni"), senza superare il tasto */
-  const w=Math.min(r.width+10,Math.max(lw+14,wide()?Math.min(r.width-8,76):Math.min(r.width-6,84))),h=wide()?r.height-4:r.height-2;
-  i.style.width=w+"px";i.style.height=h+"px";i.style.left=(cx-nr.left-w/2+n.scrollLeft)+"px";i.style.top=(cy-nr.top-h/2+n.scrollTop)+"px"}
-function tabInd(){const n=$("#tabs");if(!n||n.hidden)return;const b=n.querySelector('button[aria-current="true"]'),i=tabIndEl();if(!b){i.style.opacity="0";return}i.style.opacity="1";
+  const w=Math.min(r.width+10,Math.max(lw+14,wide()?Math.min(r.width-8,76*(FSCALE[getTheme().fs]||1)):Math.min(r.width-6,84*(FSCALE[getTheme().fs]||1)))),h=wide()?r.height-4:r.height-2;
+  const cs=getComputedStyle(n),pl=parseFloat(cs.paddingLeft)||0,pr=parseFloat(cs.paddingRight)||0,bl=parseFloat(cs.borderLeftWidth)||0,inner=n.clientWidth-pl-pr,W=Math.min(w,inner);
+  let x=cx-nr.left-bl-W/2+n.scrollLeft;x=Math.max(pl,Math.min(x,n.clientWidth-pr-W));
+  i.style.width=W+"px";i.style.height=h+"px";i.style.left=x+"px";i.style.top=(cy-nr.top-(parseFloat(cs.borderTopWidth)||0)-h/2+n.scrollTop)+"px"}
+function tabFit(n){n.classList.remove("lblact","actwide");const B=[...n.querySelectorAll("button[data-tab]")],over=()=>B.some(b=>b.scrollWidth>b.clientWidth+1);
+  if(over()){n.classList.add("lblact");return}
+  /* se l'etichetta attiva è troppo larga per avere margine dentro il selettore, la sua scheda si allarga un po' (le altre restano leggibili) */
+  const c=n.querySelector('button[aria-current="true"]');if(!c||wide())return;const g=document.createRange(),t=[...c.childNodes].filter(x=>x.nodeType===3&&x.textContent.trim()).pop();if(!t)return;g.selectNodeContents(t);
+  if(g.getBoundingClientRect().width+20>c.clientWidth){n.classList.add("actwide");if(over()){n.classList.remove("actwide");n.classList.add("lblact")}}}
+function tabInd(){const n=$("#tabs");if(!n||n.hidden)return;tabFit(n);const b=n.querySelector('button[aria-current="true"]'),i=tabIndEl();if(!b){i.style.opacity="0";return}i.style.opacity="1";
   const r=b.getBoundingClientRect();tabIndAt(r.left+r.width/2,r.top+r.height/2,b)}
 function tabAtPoint(x,y){let best=null,bd=1e9;$("#tabs").querySelectorAll("button[data-tab]").forEach(b=>{const r=b.getBoundingClientRect(),d=wide()?Math.abs(y-(r.top+r.height/2)):Math.abs(x-(r.left+r.width/2));if(d<bd){bd=d;best=b}});return best}
 (()=>{const n=document.getElementById("tabs");
@@ -2870,7 +2882,12 @@ function pickFoodInline(cb,opt){opt=opt||{};const multi=!!opt.multi,sel=new Map(
   draw();q.oninput=draw;
   s.querySelector("#ipf").onclick=e=>{const b=e.target.closest("[data-f]");if(!b)return;flt=b.dataset.f;s.querySelectorAll("#ipf .pill").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));draw()};
   const done=f=>{s.remove();cb(f)};
-  s.querySelector("#ic").onclick=()=>done(null);s.querySelector(".sheetx").onclick=()=>done(null);s.onclick=e=>{if(e.target===s)done(null)};
+  /* toccare fuori dalla finestra non la chiude (un clic o una selezione col mouse che finisce fuori farebbe perdere gli alimenti spuntati);
+     con alimenti spuntati, Annulla, ×, Esc e indietro chiedono prima cosa fare */
+  if(multi){sheetGuard(s,()=>sel.size>0,()=>{const b=s.querySelector("#iok");if(b&&!b.disabled)b.click()});
+    s._gtxt={t:"Alimenti selezionati non aggiunti",p:"Hai spuntato degli alimenti ma non li hai ancora aggiunti.",keep:"Continua a scegliere",drop:"Chiudi senza aggiungere",save:"Aggiungi"}}
+  const cancel=()=>{if(!guardOk(s))return;done(null)};
+  s.querySelector("#ic").onclick=cancel;s.querySelector(".sheetx").onclick=e=>{e.stopPropagation();cancel()};
   if(multi){il.onchange=e=>{const c=e.target.closest("input[data-pn]");if(!c)return;const k=key(c.dataset.pn);if(c.checked)sel.set(k,c.dataset.pn);else sel.delete(k);
       il.querySelectorAll(`input[data-pn]`).forEach(x=>{if(key(x.dataset.pn)===k)x.checked=c.checked});
       const d=c.closest(".pktree");if(d){const n=[...sel.keys()].filter(k2=>{const f=food(sel.get(k2));return f&&f.c===d.dataset.cat}).length,sm=d.querySelector("summary");let ct=sm.querySelector(".cnt");if(n){if(!ct){ct=document.createElement("span");ct.className="cnt";sm.appendChild(ct)}ct.textContent="✓ "+n}else if(ct)ct.remove()}
@@ -3691,7 +3708,8 @@ function syncCard(){if(isDrive()&&!gdNative()&&gdWebOk())gdLoadGis().catch(()=>{
 /* ═════════ fogli ═════════ */
 function sheet(html,init,full){
   closeSheet(true);const s=document.createElement("div");s.className="scrim";s.innerHTML=`<div class="sheet${full?" full":""}" role="dialog" aria-modal="true"><div class="grabzone" aria-hidden="true"><div class="grab"></div></div><button type="button" class="sheetx" aria-label="Chiudi">${I.x}</button>${html}</div>`;
-  s.addEventListener("click",e=>{if(e.target===s||e.target.closest("[data-close]"))closeSheet()});
+  let downOut=false;s.addEventListener("pointerdown",e=>{downOut=e.target===s});
+  s.addEventListener("click",e=>{if(e.target.closest("[data-close]")||(e.target===s&&downOut))closeSheet();downOut=false});
   document.body.appendChild(s);init&&init(s.querySelector(".sheet"));
 }
 /* C'è una tastiera fisica? Su PC con mouse sì. Sui dispositivi touch (PC touch, tablet, telefoni) solo se è collegato
@@ -3714,14 +3732,15 @@ new MutationObserver(ms=>{let added=false;const gone=[];
   if(added||!gone.length||matchMedia("(prefers-reduced-motion:reduce)").matches)return;
   const g=gone[gone.length-1];g.className="scrimg";g.removeAttribute("role");g.setAttribute("aria-hidden","true");g.inert=true;
   g.querySelectorAll("[id]").forEach(e=>e.removeAttribute("id"));g.querySelectorAll(".unsaved").forEach(e=>e.remove());
-  const sh=g.querySelector(".sheet");if(sh&&sh.style.transform&&/translateY\(100%\)/.test(sh.style.transform)){sh.style.transition="none"}
+  const sh=g.querySelector(".sheet");if(sh)sh.style.transition="";
   document.body.appendChild(g);g.offsetWidth;requestAnimationFrame(()=>g.classList.add("go"));setTimeout(()=>g.remove(),340)}).observe(document.body,{childList:true});
 /* fogli con modifiche (anagrafica, misure): prima di chiuderli senza salvare si chiede cosa fare */
 function sheetGuard(sc,isDirty,save){sc._dirty=isDirty;sc._save=save}
 function guardOk(sc){if(!sc||!sc._dirty||!sc._dirty())return true;
   const sh=sc.querySelector(".sheet");if(sh.querySelector(".unsaved"))return false;sh.style.transform="";
   const d=document.createElement("div");d.className="unsaved";d.setAttribute("role","alertdialog");
-  d.innerHTML=`<b>Modifiche non salvate</b><p class="note" style="margin:4px 0 12px">Vuoi salvarle prima di chiudere?</p><div class="actions" style="flex-wrap:wrap"><button type="button" class="btn" data-u="keep">Continua a modificare</button><button type="button" class="btn danger" data-u="drop">Non salvare</button><button type="button" class="btn primary" data-u="save">Salva</button></div>`;
+  const G=sc._gtxt||{};
+  d.innerHTML=`<b>${esc(G.t||"Modifiche non salvate")}</b><p class="note" style="margin:4px 0 12px">${esc(G.p||"Vuoi salvarle prima di chiudere?")}</p><div class="actions" style="flex-wrap:wrap"><button type="button" class="btn" data-u="keep">${esc(G.keep||"Continua a modificare")}</button><button type="button" class="btn danger" data-u="drop">${esc(G.drop||"Non salvare")}</button><button type="button" class="btn primary" data-u="save">${esc(G.save||"Salva")}</button></div>`;
   d.addEventListener("click",e=>{const b=e.target.closest("[data-u]");if(!b)return;e.stopPropagation();const u=b.dataset.u;d.remove();
     if(u==="drop"){sc._dirty=null;sc.remove();if(!document.querySelector(".scrim")&&SY.pendingRender){SY.pendingRender=false;setTimeout(rerender,0)}}else if(u==="save")sc._save&&sc._save()});
   sh.append(d);return false}
@@ -3738,13 +3757,22 @@ document.addEventListener("click",e=>{if(e.target.closest(".sheetx")){e.stopProp
 /* trascinare verso il basso la maniglia (o la parte alta del foglio) per chiuderlo */
 (function(){let st=null;
   document.addEventListener("pointerdown",e=>{const z=e.target.closest(".grabzone");if(!z)return;const sh=z.closest(".sheet");st={sh,y:e.clientY,id:e.pointerId,t:Date.now()};sh.style.transition="none";try{z.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault()});
-  document.addEventListener("pointermove",e=>{if(!st||e.pointerId!==st.id)return;const dy=Math.max(0,e.clientY-st.y);st.sh.style.transform=`translateY(${dy}px)`});
+  document.addEventListener("pointermove",e=>{if(!st||e.pointerId!==st.id)return;sheetDragMove(st.sh,Math.max(0,e.clientY-st.y))});
   const end=e=>{if(!st||e.pointerId!==st.id)return;const dy=Math.max(0,e.clientY-st.y),v=dy/Math.max(1,Date.now()-st.t),sh=st.sh;st=null;sheetDragEnd(sh,dy,v)};
   document.addEventListener("pointerup",end);document.addEventListener("pointercancel",end)})();
+function sheetDragMove(sh,dy){const sc=sh.closest(".scrim"),p=Math.max(0,Math.min(1,1-dy/Math.max(1,sh.offsetHeight)));sh.style.transform=`translateY(${dy}px)`;
+  document.documentElement.classList.add("shdrag");if(sc)sc.style.setProperty("--shp",p);if(sc===[...document.querySelectorAll(".scrim")].pop())document.documentElement.style.setProperty("--shp",p)}
+function sheetDragReset(sh){const sc=sh.closest(".scrim");document.documentElement.classList.remove("shdrag");if(sc)sc.style.removeProperty("--shp");document.documentElement.style.removeProperty("--shp")}
 function sheetDragEnd(sh,dy,v){
-  if((dy>90||(dy>30&&v>.5))&&!guardOk(sh.closest(".scrim"))){sh.style.transition="transform .15s ease-out";sh.style.transform="";return}
-  if(dy>90||(dy>30&&v>.5)){sh.style.transition="transform .15s ease-in";sh.style.transform="translateY(100%)";setTimeout(()=>{const sc=sh.closest(".scrim");if(sc){sc.remove();if(!document.querySelector(".scrim")&&SY.pendingRender){SY.pendingRender=false;setTimeout(rerender,0)}}},140)}
-  else{sh.style.transition="transform .15s ease-out";sh.style.transform=""}}
+  const back=()=>{document.documentElement.classList.remove("shdrag");sh.style.transition="transform .3s var(--sh-e)";sh.style.transform="";const sc=sh.closest(".scrim");
+    /* velo e pagina tornano insieme al foglio */
+    if(sc){sc.style.transition="background-color .3s,backdrop-filter .3s,-webkit-backdrop-filter .3s";sc.style.removeProperty("--shp");setTimeout(()=>{sc.style.transition=""},320)}document.documentElement.style.removeProperty("--shp")};
+  const close=dy>90||(dy>30&&v>.5);
+  if(close&&!guardOk(sh.closest(".scrim")))return back();
+  if(close){const sc=sh.closest(".scrim");document.documentElement.classList.remove("shdrag");document.documentElement.style.removeProperty("--shp");
+    /* si toglie subito: la copia in uscita prosegue dal punto raggiunto, con velo, sfocatura e pagina che riemerge */
+    if(sc){sc.remove();if(!document.querySelector(".scrim")&&SY.pendingRender){SY.pendingRender=false;setTimeout(rerender,0)}}}
+  else back()}
 /* trascinare verso il basso dal corpo del foglio, quando il contenuto è già all'inizio */
 (function(){let T=null;
   const atTop=(el,sh)=>{for(;el&&el!==sh.parentElement;el=el.parentElement){if(el.scrollHeight>el.clientHeight+1){const o=getComputedStyle(el).overflowY;if((o==="auto"||o==="scroll")&&el.scrollTop>0)return false}}return true};
@@ -3752,7 +3780,7 @@ function sheetDragEnd(sh,dy,v){
     if(!sh||t.closest(".grabzone,input,textarea,select,.dpk")||!atTop(t,sh))return;const p=e.touches[0];T={sh,tg:t,x:p.clientX,y:p.clientY,on:false}},{passive:true});
   document.addEventListener("touchmove",e=>{if(!T)return;const p=e.touches[0],dy=p.clientY-T.y,dx=p.clientX-T.x;
     if(!T.on){if(dy<-4||Math.abs(dx)>Math.abs(dy)+4){T=null;return}if(dy<10)return;if(!atTop(T.tg,T.sh)){T=null;return}T.on=true;T.y0=p.clientY;T.t=Date.now();T.sh.style.transition="none"}
-    if(e.cancelable)e.preventDefault();T.sh.style.transform=`translateY(${Math.max(0,p.clientY-T.y0)}px)`},{passive:false});
+    if(e.cancelable)e.preventDefault();sheetDragMove(T.sh,Math.max(0,p.clientY-T.y0))},{passive:false});
   const end=e=>{if(!T)return;const t=T;T=null;if(!t.on)return;const p=e.changedTouches&&e.changedTouches[0],dy=p?Math.max(0,p.clientY-t.y0):0;
     if(e.type==="touchcancel")return sheetDragEnd(t.sh,0,0);sheetDragEnd(t.sh,dy,dy/Math.max(1,Date.now()-t.t))};
   document.addEventListener("touchend",end);document.addEventListener("touchcancel",end)})();
@@ -3780,7 +3808,7 @@ async function nativeOpen(url){try{const FS=window.Capacitor.Plugins.Filesystem;
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="2.1.1"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="2.1.2"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
