@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-krl70rHMubuGufkQt9YI+72kTgwKj2x+T3M6/bf3z0w=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-W3tw1wApCnKOdxQEfv9JkUgYi+C+76b8gcAMp+BMj8c=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -90,6 +90,9 @@ nav.tabs button[aria-current="true"]{color:var(--accent);font-weight:650}
 .grt thead th{font-size:12px;color:var(--ink-2);font-weight:600}.grt tbody tr:not(.grt-c) th,.grt tbody tr:not(.grt-c) td{border-top:1px solid var(--line,rgba(0,0,0,.08))}
 .grt-c td{text-align:left!important;font-size:13px;font-weight:600;padding-top:0}.grt td.note{text-align:left;font-size:13px}
 .grt-w{overflow-x:auto}.grt-p td,.grt-p th{text-align:center}.grt-p tbody th{text-align:left;font-weight:600;font-size:13px;white-space:nowrap}
+.subrow{grid-template-columns:minmax(0,1fr) auto 36px;align-items:start}.subrow select.smrow{margin-top:4px;font-size:13px;padding:4px 6px;height:auto;width:auto;max-width:100%}
+.subpick{max-height:38vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;padding:4px 10px}.subchk{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line);margin:0}.subchk:last-child{border-bottom:0}.subchk input{margin-top:3px;flex:none}
+.unsaved{position:absolute;inset:auto 0 0 0;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.15);padding:14px 16px calc(14px + env(safe-area-inset-bottom));border-radius:16px 16px 0 0;z-index:5}
 .bmiwrap{display:grid;gap:0 14px}@media(min-width:900px){.bmiwrap{grid-template-columns:1fr 1fr;align-items:start}}
 .bmibig{display:flex;align-items:baseline;gap:6px}.bmibig b{font-size:34px;line-height:1.1}.bmibig span{color:var(--ink-2);font-size:14px}
 .bmibar{position:relative;height:12px;border-radius:6px;margin:6px 0 4px}
@@ -831,13 +834,15 @@ function editAnagrafica(p){
    <div class="field"><label for="po">Peso obiettivo</label><input id="po" value="${esc(p.peso_obiettivo)}" placeholder="Es. 75kg"></div>
    <div class="grid2"><div class="field"><label for="pt">Telefono</label><input id="pt" inputmode="tel" value="${esc(p.telefono)}"></div>
    <div class="field"><label for="pe">Email</label><input id="pe" inputmode="email" value="${esc(p.email)}"></div></div>
-   <div class="field"><label for="pno">Note cliniche</label><textarea id="pno">${esc(p.note)}</textarea></div>
-   <div class="actions"><button type="button" class="btn" data-close>Annulla</button><button class="btn primary">Salva</button></div></form>`,s=>{
-   s.querySelector("#pf").onsubmit=async e=>{e.preventDefault();const n=s.querySelector("#pn").value.trim();if(!n)return;
+   <div class="field"><label for="pno">Note cliniche</label><textarea id="pno">${esc(p.note)}</textarea></div></form>
+   <div class="actions" style="margin-top:10px"><button type="button" class="btn" data-close>Annulla</button><button class="btn primary" type="submit" form="pf">Salva</button></div>`,s=>{
+   const F=s.querySelector("#pf"),snap=()=>[...F.querySelectorAll("input,select,textarea")].map(e=>e.value).join("\u0001"),s0=snap();
+   sheetGuard(s.closest(".scrim"),()=>snap()!==s0,()=>F.requestSubmit());
+   F.onsubmit=async e=>{e.preventDefault();const n=s.querySelector("#pn").value.trim();if(!n){toast("Scrivi nome e cognome");s.querySelector("#pn").focus();return}
      const d=s.querySelector("#pd").value.trim();if(d&&!DRE.test(d))return toast("Scrivi la data di nascita come gg/mm/aaaa");
      const pw=num(s.querySelector("#pw").value);if(pw!=null&&!(pw>20&&pw<400))return toast("Peso non valido");if(pw!=null&&pw!==pesoRef(p))setPesoOggi(p,pw);
      Object.assign(p,{nome:n,data_nascita:d,sesso:s.querySelector("#ps").value,altezza:num(s.querySelector("#ph").value),telefono:s.querySelector("#pt").value.trim(),email:s.querySelector("#pe").value.trim(),peso_obiettivo:s.querySelector("#po").value.trim(),note:s.querySelector("#pno").value});
-     await savePaz(p);closeSheet();if(isNew){openPaz(p,"prescr");toast("Imposta ora la prescrizione")}else rerender()}});
+     await savePaz(p);closeSheet(true);if(isNew){openPaz(p,"prescr");toast("Imposta ora la prescrizione")}else{rerender();toast("Dati salvati")}}});
 }
 
 /* ═════════ scheda paziente ═════════ */
@@ -1289,14 +1294,16 @@ function editVisita(p,v){
    <div class="grid2">${F("bmg","Massa grassa",b.mg,"%")}${F("bmm","Massa magra (FFM)",b.mm,"kg")}${F("btbw","Acqua totale (TBW)",b.tbw,"L")}${F("bpa","Angolo di fase",b.pa,"°")}${F("brz","Resistenza Rz",b.rz,"Ω")}${F("bxc","Reattanza Xc",b.xc,"Ω")}${F("bmb","Metabolismo basale",b.mb,"kcal")}</div>
    <div class="label" style="margin:2px 0 8px">Pliche cutanee</div>
    <div class="grid2">${F("ptr","Tricipitale",pl.tric,"mm")}${F("pbi","Bicipitale",pl.bic,"mm")}${F("pss","Sottoscapolare",pl.sottosc,"mm")}${F("psi","Sovrailiaca",pl.sovrail,"mm")}</div>
-   <div class="field"><label for="vn">Note</label><textarea id="vn">${esc(v.note)}</textarea></div>
-   <div class="actions">${isNew?`<button type="button" class="btn" data-close>Annulla</button>`:`<button type="button" class="btn danger" id="vdel">Elimina</button>`}<button class="btn primary">Salva</button></div></form>`,s=>{
+   <div class="field"><label for="vn">Note</label><textarea id="vn">${esc(v.note)}</textarea></div></form>
+   <div class="actions" style="margin-top:10px">${isNew?`<button type="button" class="btn" data-close>Annulla</button>`:`<button type="button" class="btn danger" id="vdel">Elimina</button>`}<button class="btn primary" type="submit" form="vf">Salva</button></div>`,s=>{
    const g=id=>num(s.querySelector(id).value);
-   if(!isNew)s.querySelector("#vdel").onclick=()=>{closeSheet();confirmSheet("Eliminare la visita del "+v.data+"?","I dati di questa visita vengono rimossi.","Elimina",()=>{p.visite=p.visite.filter(x=>x!==v);savePaz(p);rerender()})};
+   const VF=s.querySelector("#vf"),snap=()=>[...VF.querySelectorAll("input,select,textarea")].map(e=>e.value).join("\u0001"),s0=snap();
+   sheetGuard(s.closest(".scrim"),()=>snap()!==s0,()=>VF.requestSubmit());
+   if(!isNew)s.querySelector("#vdel").onclick=()=>{closeSheet(true);confirmSheet("Eliminare la visita del "+v.data+"?","I dati di questa visita vengono rimossi.","Elimina",()=>{p.visite=p.visite.filter(x=>x!==v);savePaz(p);rerender()})};
    s.querySelector("#vf").onsubmit=async e=>{e.preventDefault();const d=s.querySelector("#vd").value.trim();if(!DRE.test(d))return toast("Scrivi la data come gg/mm/aaaa");
      Object.assign(v,{data:d,peso:g("#vp"),altezza:g("#vh"),vita:g("#vv"),fianchi:g("#vfi"),braccio:g("#vb"),coscia:g("#vco"),polpaccio:g("#vpo"),polso:g("#vpl"),note:s.querySelector("#vn").value,
        bia:{mg:g("#bmg"),mm:g("#bmm"),tbw:g("#btbw"),pa:g("#bpa"),rz:g("#brz"),xc:g("#bxc"),mb:g("#bmb")},pliche:{tric:g("#ptr"),bic:g("#pbi"),sottosc:g("#pss"),sovrail:g("#psi")}});
-     if(v.altezza&&!p.altezza)p.altezza=v.altezza;if(isNew)p.visite.push(v);await savePaz(p);closeSheet();state.ptab="visite";rerender();toast("Visita salvata")}},true);
+     if(v.altezza&&!p.altezza)p.altezza=v.altezza;if(isNew)p.visite.push(v);await savePaz(p);closeSheet(true);state.ptab="visite";rerender();toast("Visita salvata")}},true);
 }
 
 /* ═════════ scelta alimento e grammi ═════════ */
@@ -1353,7 +1360,8 @@ const ingList=f=>{const h=(f.ing||[]).find(x=>/^Ingredienti/.test(x));
 const SUB_MODES=[["KCAL","Isocalorica"],["PROTEINE","Iso-proteica"],["GLUCIDI","Iso-glucidica"],["LIPIDI","Iso-lipidica"],["FIBRA","Iso-fibra"]];
 const subModeLabel=m=>(SUB_MODES.find(x=>x[0]===m)||SUB_MODES[0])[1];
 function eqGrams(f0,g0,f1,mode,st){st=st||state.kv.opt.subStep||5;if(mode==="PESO")return g0>0?Math.max(st,Math.round(g0/st)*st):null;const ref=val(f0,mode,g0),per=f1.v[CI[mode]]||0;if(!f0||!per||ref<=0)return null;return Math.max(st,Math.round(ref/per*100/st)*st)}
-function subsOf(x){const f0=food(x.n),mode=x.sm||"KCAL",st=x.ss||state.kv.opt.subStep||5;return(x.sost||[]).map(s=>{const f1=food(s.n);return{n:s.n,f:f1,g:!(f0&&f1)?null:s.r?Math.max(st,Math.round(s.r*x.g/st)*st):eqGrams(f0,x.g,f1,mode,x.ss)}})}
+/* ogni alternativa può avere la sua equivalenza (s.sm); altrimenti vale quella generale dell'alimento (x.sm) */
+function subsOf(x){const f0=food(x.n),st=x.ss||state.kv.opt.subStep||5;return(x.sost||[]).map(s=>{const f1=food(s.n),mode=s.sm||x.sm||"KCAL";return{n:s.n,f:f1,sm:s.sm||"",mode,g:!(f0&&f1)?null:s.r?Math.max(st,Math.round(s.r*x.g/st)*st):eqGrams(f0,x.g,f1,mode,x.ss)}})}
 const subsLine=x=>{const S=subsOf(x);return S.length?`<span class="subs">oppure ${S.map(s=>esc(s.n)+(s.g?" "+fmt(s.g)+"g":"")).join(" · ")}</span>`:""};
 const shares=f=>{const k=(f.v[CI.PROTEINE]||0)*4+(f.v[CI.LIPIDI]||0)*9+(f.v[CI.GLUCIDI]||0)*4||1;return[(f.v[CI.PROTEINE]||0)*4/k,(f.v[CI.LIPIDI]||0)*9/k,(f.v[CI.GLUCIDI]||0)*4/k]};
 function suggestSubs(f0,g0,mode,exclude,x0st){
@@ -1365,23 +1373,62 @@ function suggestSubs(f0,g0,mode,exclude,x0st){
   return{same,other,n:same.length+other.length};
 }
 function subsSheet(p,x,back){
-  const f0=food(x.n);if(!f0)return;
+  const f0=food(x.n);if(!f0)return;const pick=new Set();
   const draw=s=>{const mode=x.sm||"KCAL",S=subsOf(x),ex=new Set([key(x.n),...(x.sost||[]).map(z=>key(z.n))]),sg=suggestSubs(f0,x.g,mode,ex,x.ss),GS=groupsFor(x.n);
+    for(const k of [...pick])if(ex.has(k))pick.delete(k);
     const cmp=(f,g)=>[["KCAL","kcal",0],["PROTEINE","P",1],["LIPIDI","L",1],["GLUCIDI","G",1]].map(([c,l,d])=>`${l} ${fmt(val(f,c,g),d)}`).join(" · ");
+    const rowMode=(z,i)=>`<select class="smrow" data-sm="${i}" aria-label="Equivalenza per ${esc(z.n)}"><option value=""${z.sm?"":" selected"}>Come generale</option>${ALT_MODES.map(([k,l])=>`<option value="${k}"${z.sm===k?" selected":""}>${l}</option>`).join("")}</select>`;
+    const sugg=[["Stessa categoria",sg.same],["Altri con profilo nutrizionale simile",sg.other]].filter(g=>g[1].length);
     s.querySelector("#sb").innerHTML=`<p class="note" style="margin-top:0">Riferimento: <b>${esc(x.n)} ${fmt(x.g)}g</b> · ${cmp(f0,x.g)}</p>
      ${GS.length?`<div class="field"><label for="sgrp">Alternative standard</label><select id="sgrp"><option value="">${x.grp?"In uso: "+esc((GS.find(g=>g.id===x.grp)||{nome:"gruppo"}).nome):"Applica un gruppo…"}</option>${GS.map(g=>`<option value="${g.id}">${esc(g.nome)} · ${g.items.length-1} alternative</option>`).join("")}</select><span class="hint">Sostituisce l'elenco qui sotto con le alternative del gruppo.</span></div>`:""}
-     <div class="field"><label for="smode">Tipo di equivalenza</label><select id="smode">${ALT_MODES.map(([k,l])=>`<option value="${k}"${k===mode?" selected":""}>${l}</option>`).join("")}</select><span class="hint">Vale per tutte le sostituzioni di questo alimento; le grammature si ricalcolano da sole se cambi i grammi del riferimento.</span></div>
-     <div class="label">Sostituzioni (${S.length})</div>
-     ${S.map((z,i)=>`<div class="ingrow" style="grid-template-columns:minmax(0,1fr) auto 36px"><span style="min-width:0;overflow-wrap:anywhere"><b>${esc(z.n)}</b>${z.f?warnTag(z.f):""}<br><span class="note" style="margin:0">${z.f&&z.g?cmp(z.f,z.g):"non in archivio"}</span></span><b class="num">${z.g?fmt(z.g)+"g":"–"}</b><button class="iconbtn" data-sx="${i}" aria-label="Rimuovi ${esc(z.n)}" style="width:36px;height:36px">${I.x}</button></div>`).join("")||`<p class="note">Nessuna sostituzione.</p>`}
-     <div class="field" style="margin-top:12px"><label for="ssel">Aggiungi dal database</label><select id="ssel"><option value="">Scegli tra ${sg.n} suggerimenti…</option>${[["Stessa categoria",sg.same],["Altri con profilo nutrizionale simile",sg.other]].filter(g=>g[1].length).map(([l,L])=>`<optgroup label="${l}">${L.map(z=>`<option value="${esc(z.f.n)}">${esc(z.f.n)} · ${fmt(z.g)}g · ${fmt(val(z.f,"KCAL",z.g))}kcal</option>`).join("")}</optgroup>`).join("")}<option value="__search">Cerca un altro alimento…</option></select></div>`;
+     <div class="field"><label for="smode">Equivalenza generale</label><select id="smode">${ALT_MODES.map(([k,l])=>`<option value="${k}"${k===mode?" selected":""}>${l}</option>`).join("")}</select><span class="hint">Vale per le alternative impostate su "Come generale"; ogni riga può averne una sua. Le grammature si ricalcolano se cambi i grammi del riferimento.</span></div>
+     <div class="head" style="margin:4px 0 2px"><div class="label" style="margin:0">Sostituzioni (${S.length})</div>${S.length?`<button type="button" class="btn small" id="scopy">Copia su altri alimenti…</button>`:""}</div>
+     ${S.map((z,i)=>`<div class="ingrow subrow"><span style="min-width:0;overflow-wrap:anywhere"><b>${esc(z.n)}</b>${z.f?warnTag(z.f):""}<br><span class="note" style="margin:0">${z.f&&z.g?cmp(z.f,z.g):z.f?`non calcolabile con l'equivalenza ${altModeLabel(z.mode).toLowerCase()}`:"non in archivio"}</span><br>${rowMode(z,i)}</span><b class="num">${z.g?fmt(z.g)+"g":"–"}</b><button class="iconbtn" data-sx="${i}" aria-label="Rimuovi ${esc(z.n)}" style="width:36px;height:36px">${I.x}</button></div>`).join("")||`<p class="note">Nessuna sostituzione.</p>`}
+     <div class="label" style="margin:14px 0 4px">Aggiungi dal database</div>
+     ${sugg.length?`<div class="subpick">${sugg.map(([l,L])=>`<div class="note" style="margin:6px 0 2px;font-weight:600">${l}</div>${L.map(z=>`<label class="pd-o subchk"><input type="checkbox" data-pk="${esc(key(z.f.n))}" data-pn="${esc(z.f.n)}"${pick.has(key(z.f.n))?" checked":""}><span><b>${esc(z.f.n)}</b>${warnTag(z.f)} <span class="num note" style="margin:0">${fmt(z.g)}g · ${fmt(val(z.f,"KCAL",z.g))}kcal</span></span></label>`).join("")}`).join("")}</div>`:`<p class="note">Nessun suggerimento con questa equivalenza.</p>`}
+     <div class="actions" style="flex-wrap:wrap;margin-top:8px"><button type="button" class="btn" id="ssrc">Cerca un altro alimento…</button><button type="button" class="btn primary" id="sadd"${pick.size?"":" disabled"}>Aggiungi le selezionate${pick.size?` (${pick.size})`:""}</button></div>`;
     s.querySelector("#smode").onchange=e=>{x.sm=e.target.value;delete x.grp;(x.sost||[]).forEach(z=>delete z.r);savePaz(p);draw(s)};
     const sg2=s.querySelector("#sgrp");if(sg2)sg2.onchange=e=>{const G=GS.find(g=>g.id===e.target.value);if(G){applyGroup(x,G);savePaz(p)}draw(s)};
     s.querySelectorAll("[data-sx]").forEach(b=>b.onclick=()=>{x.sost.splice(+b.dataset.sx,1);delete x.grp;savePaz(p);draw(s)});
-    s.querySelector("#ssel").onchange=e=>{const v=e.target.value;if(!v)return;
-      const add=f=>{if(!f)return draw(s);if(key(f.n)===key(x.n))return toast("È lo stesso alimento");if(mode!=="PESO"&&!(f.v[CI[mode]]>0))return toast(`${f.n} non contiene ${lab(mode)[0].toLowerCase()}: scegli un altro alimento o un'altra equivalenza`),draw(s);x.sost=x.sost||[];if(!x.sost.some(z=>key(z.n)===key(f.n)))x.sost.push({n:f.n});delete x.grp;savePaz(p);draw(s)};
-      v==="__search"?pickFoodInline(add):add(food(v))}};
+    s.querySelectorAll("[data-sm]").forEach(el=>el.onchange=()=>{const z=x.sost[+el.dataset.sm];if(!z)return;if(el.value)z.sm=el.value;else delete z.sm;delete z.r;delete x.grp;savePaz(p);draw(s)});
+    const sa=s.querySelector("#sadd");
+    s.querySelectorAll("[data-pk]").forEach(c=>c.onchange=()=>{c.checked?pick.add(c.dataset.pk):pick.delete(c.dataset.pk);sa.disabled=!pick.size;sa.textContent="Aggiungi le selezionate"+(pick.size?` (${pick.size})`:"")});
+    sa.onclick=()=>{if(!pick.size)return;x.sost=x.sost||[];let n=0;
+      s.querySelectorAll("[data-pk]").forEach(c=>{if(!pick.has(c.dataset.pk))return;const f=food(c.dataset.pn);if(f&&!x.sost.some(z=>key(z.n)===key(f.n))){x.sost.push({n:f.n});n++}});
+      pick.clear();delete x.grp;savePaz(p);draw(s);toast(n===1?"1 sostituzione aggiunta":n+" sostituzioni aggiunte")};
+    s.querySelector("#ssrc").onclick=()=>pickFoodInline(f=>{if(!f)return draw(s);if(key(f.n)===key(x.n))return toast("È lo stesso alimento");
+      if(mode!=="PESO"&&!(f.v[CI[mode]]>0))toast(`${f.n} non contiene ${lab(mode)[0].toLowerCase()}: imposta un'altra equivalenza per questa riga`);
+      x.sost=x.sost||[];if(!x.sost.some(z=>key(z.n)===key(f.n)))x.sost.push({n:f.n});delete x.grp;savePaz(p);draw(s)});
+    const cp=s.querySelector("#scopy");if(cp)cp.onclick=()=>copySubsSheet(p,x,()=>subsSheet(p,x,back))};
   sheet(`<h2>Sostituzioni</h2><div class="scroll" id="sb"></div><div class="actions" style="margin-top:10px"><button class="btn primary" id="sok">Fatto</button></div>`,s=>{draw(s);s.querySelector("#sok").onclick=()=>{closeSheet();back&&back()}},true);
 }
+/* copia delle sostituzioni di un alimento su altri alimenti della dieta (altri pasti o altri giorni) */
+function copySubsSheet(p,x,back){
+  const T=[];(p.giorni||[]).forEach((d,di)=>(d.pasti||[]).forEach(m=>(m.voci||[]).forEach(v=>{if(v!==x&&food(v.n))T.push({v,di,d,m})})));
+  if(!T.length)return toast("Non ci sono altri alimenti nella dieta");
+  const same=T.filter(t=>key(t.v.n)===key(x.n)),other=T.filter(t=>key(t.v.n)!==key(x.n)),sel=new Set();
+  const dl=t=>`Giorno ${t.di+1}${t.d.titolo?" · "+esc(t.d.titolo):""} · ${esc(t.m.nome)}`;
+  const row=(t,i)=>`<label class="pd-o subchk"><input type="checkbox" data-ct="${i}"><span><b>${esc(t.v.n)} ${fmt(t.v.g)}g</b><br><span class="note" style="margin:0">${dl(t)}${(t.v.sost||[]).length?` · ha già ${t.v.sost.length} sostituzioni`:""}</span></span></label>`;
+  const all=[...same,...other];
+  sheet(`<h2>Copia le sostituzioni</h2><div class="scroll">
+    <p class="note" style="margin-top:0">Da <b>${esc(x.n)} ${fmt(x.g)}g</b>: ${(x.sost||[]).length} alternative (${esc((x.sost||[]).map(z=>z.n).join(", "))}).</p>
+    <div class="field"><label for="cpm">Equivalenza delle sostituzioni copiate</label><select id="cpm"><option value="">Come nell'originale (generale ${esc(altModeLabel(x.sm||"KCAL").toLowerCase())} e impostazioni per riga)</option>${ALT_MODES.map(([k,l])=>`<option value="${k}">${l} per tutte</option>`).join("")}</select></div>
+    <div class="field"><label for="cpr">Se l'alimento ha già delle sostituzioni</label><select id="cpr"><option value="add">Aggiungi a quelle esistenti</option><option value="rep">Sostituiscile</option></select></div>
+    <label class="pd-o" style="margin:0 0 10px"><input type="checkbox" id="cpx" checked> Aggiungi anche ${esc(x.n)} tra le alternative (se l'alimento di destinazione è diverso)</label>
+    ${same.length?`<div class="label" style="margin:6px 0 2px">Stesso alimento in altri pasti</div>${same.map((t,i)=>row(t,i)).join("")}`:""}
+    ${other.length?`<div class="label" style="margin:12px 0 2px">Altri alimenti</div>${other.map((t,i)=>row(t,i+same.length)).join("")}`:""}
+    </div><div class="actions" style="margin-top:10px"><button type="button" class="btn" id="cpb">Indietro</button><button type="button" class="btn primary" id="cpok" disabled>Copia</button></div>`,sh=>{
+    const ok=sh.querySelector("#cpok"),upd=()=>{ok.disabled=!sel.size;ok.textContent=sel.size?`Copia su ${sel.size} ${sel.size===1?"alimento":"alimenti"}`:"Copia"};
+    sh.querySelectorAll("[data-ct]").forEach(c=>c.onchange=()=>{c.checked?sel.add(+c.dataset.ct):sel.delete(+c.dataset.ct);upd()});
+    sh.querySelector("#cpb").onclick=()=>{closeSheet();back()};
+    ok.onclick=()=>{const md=sh.querySelector("#cpm").value,repl=sh.querySelector("#cpr").value==="rep",incl=sh.querySelector("#cpx").checked;let n=0,skip=0;
+      for(const i of sel){const t=all[i],v=t.v,same=key(v.n)===key(x.n);
+        let L=(x.sost||[]).filter(z=>key(z.n)!==key(v.n)).map(z=>{const o={n:z.n};if(!md&&z.sm)o.sm=z.sm;if(!md&&same&&z.r)o.r=z.r;return o});
+        if(incl&&!same)L.unshift(md?{n:x.n}:{n:x.n});
+        if(repl){v.sost=L}else{v.sost=v.sost||[];for(const z of L)if(!v.sost.some(y=>key(y.n)===key(z.n)))v.sost.push(z)}
+        v.sm=md||x.sm||"KCAL";if(md)v.sost.forEach(z=>{delete z.sm;delete z.r});delete v.grp;n++;
+        skip+=subsOf(v).filter(z=>z.f&&!z.g).length}
+      savePaz(p);closeSheet();toast(`Sostituzioni copiate su ${n} ${n===1?"alimento":"alimenti"}`+(skip?` · ${skip} non calcolabili con l'equivalenza scelta`:""));back()}},true)}
 
 /* ═════════ esclusioni alimentari del paziente ═════════ */
 /* Allergie, intolleranze e scelte alimentari. Il riconoscimento è automatico (categoria, nome, ingredienti delle ricette,
@@ -3273,16 +3320,26 @@ function syncCard(){if(isDrive()&&!gdNative()&&gdWebOk())gdLoadGis().catch(()=>{
 
 /* ═════════ fogli ═════════ */
 function sheet(html,init,full){
-  closeSheet();const s=document.createElement("div");s.className="scrim";s.innerHTML=`<div class="sheet${full?" full":""}" role="dialog" aria-modal="true"><div class="grabzone" aria-hidden="true"><div class="grab"></div></div><button type="button" class="sheetx" aria-label="Chiudi">${I.x}</button>${html}</div>`;
+  closeSheet(true);const s=document.createElement("div");s.className="scrim";s.innerHTML=`<div class="sheet${full?" full":""}" role="dialog" aria-modal="true"><div class="grabzone" aria-hidden="true"><div class="grab"></div></div><button type="button" class="sheetx" aria-label="Chiudi">${I.x}</button>${html}</div>`;
   s.addEventListener("click",e=>{if(e.target===s||e.target.closest("[data-close]"))closeSheet()});
   document.body.appendChild(s);init&&init(s.querySelector(".sheet"));
 }
-function closeSheet(){document.querySelectorAll(".scrim").forEach(s=>s.remove());if(SY.pendingRender){SY.pendingRender=false;setTimeout(rerender,0)}}
+/* fogli con modifiche (anagrafica, misure): prima di chiuderli senza salvare si chiede cosa fare */
+function sheetGuard(sc,isDirty,save){sc._dirty=isDirty;sc._save=save}
+function guardOk(sc){if(!sc||!sc._dirty||!sc._dirty())return true;
+  const sh=sc.querySelector(".sheet");if(sh.querySelector(".unsaved"))return false;sh.style.transform="";
+  const d=document.createElement("div");d.className="unsaved";d.setAttribute("role","alertdialog");
+  d.innerHTML=`<b>Modifiche non salvate</b><p class="note" style="margin:4px 0 12px">Vuoi salvarle prima di chiudere?</p><div class="actions" style="flex-wrap:wrap"><button type="button" class="btn" data-u="keep">Continua a modificare</button><button type="button" class="btn danger" data-u="drop">Non salvare</button><button type="button" class="btn primary" data-u="save">Salva</button></div>`;
+  d.addEventListener("click",e=>{const b=e.target.closest("[data-u]");if(!b)return;e.stopPropagation();const u=b.dataset.u;d.remove();
+    if(u==="drop"){sc._dirty=null;sc.remove();if(!document.querySelector(".scrim")&&SY.pendingRender){SY.pendingRender=false;setTimeout(rerender,0)}}else if(u==="save")sc._save&&sc._save()});
+  sh.append(d);return false}
+function closeSheet(force){if(!force){const all=document.querySelectorAll(".scrim");if(all.length&&!guardOk(all[all.length-1]))return}
+  document.querySelectorAll(".scrim").forEach(s=>s.remove());if(SY.pendingRender){SY.pendingRender=false;setTimeout(rerender,0)}}
 function confirmSheet(t,msg,ok,cb){sheet(`<h2>${esc(t)}</h2><p style="color:var(--ink-2);margin:0 0 14px">${esc(msg)}</p><div class="actions"><button class="btn" data-close>Annulla</button><button class="btn primary" id="ok">${esc(ok)}</button></div>`,s=>{s.querySelector("#ok").onclick=()=>{closeSheet();cb()}})}
 function askText(title,def,ph,cb){sheet(`<h2>${esc(title)}</h2><form id="tf"><div class="field"><input id="tv" value="${esc(def)}" placeholder="${esc(ph)}" aria-label="${esc(title)}"></div><div class="actions"><button type="button" class="btn" data-close>Annulla</button><button class="btn primary">Conferma</button></div></form>`,s=>{
   const i=s.querySelector("#tv");if(wide()){i.focus();i.select()}s.querySelector("#tf").onsubmit=e=>{e.preventDefault();const v=i.value.trim();closeSheet();cb(v)}})}
 /* chiude il foglio in primo piano (Esc, tasto indietro di Android, ×, trascinamento della maniglia) */
-function closeTopSheet(){const dp=document.querySelector(".dpk");if(dp){dp.remove();return true}const all=document.querySelectorAll(".scrim");if(!all.length)return false;all[all.length-1].remove();
+function closeTopSheet(){const dp=document.querySelector(".dpk");if(dp){dp.remove();return true}const all=document.querySelectorAll(".scrim");if(!all.length)return false;if(!guardOk(all[all.length-1]))return true;all[all.length-1].remove();
   if(!document.querySelector(".scrim")&&SY.pendingRender){SY.pendingRender=false;setTimeout(rerender,0)}return true}
 window.addEventListener("keydown",e=>{if(e.key==="Escape")closeTopSheet()});
 document.addEventListener("click",e=>{if(e.target.closest(".sheetx")){e.stopPropagation();closeTopSheet()}},true);
@@ -3293,6 +3350,7 @@ document.addEventListener("click",e=>{if(e.target.closest(".sheetx")){e.stopProp
   const end=e=>{if(!st||e.pointerId!==st.id)return;const dy=Math.max(0,e.clientY-st.y),v=dy/Math.max(1,Date.now()-st.t),sh=st.sh;st=null;sheetDragEnd(sh,dy,v)};
   document.addEventListener("pointerup",end);document.addEventListener("pointercancel",end)})();
 function sheetDragEnd(sh,dy,v){
+  if((dy>90||(dy>30&&v>.5))&&!guardOk(sh.closest(".scrim"))){sh.style.transition="transform .15s ease-out";sh.style.transform="";return}
   if(dy>90||(dy>30&&v>.5)){sh.style.transition="transform .15s ease-in";sh.style.transform="translateY(100%)";setTimeout(()=>{const sc=sh.closest(".scrim");if(sc){sc.remove();if(!document.querySelector(".scrim")&&SY.pendingRender){SY.pendingRender=false;setTimeout(rerender,0)}}},140)}
   else{sh.style.transition="transform .15s ease-out";sh.style.transform=""}}
 /* trascinare verso il basso dal corpo del foglio, quando il contenuto è già all'inizio */
@@ -3330,7 +3388,7 @@ async function nativeOpen(url){try{const FS=window.Capacitor.Plugins.Filesystem;
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="1.5.2"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="2.0.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};

@@ -1,1 +1,1 @@
-{"version": "1.5.2", "apk": "apk/DietDesk-1.5.2.apk", "sha256": "8e2857ea7d50654a1c77483e55c468a3e2f9f51d3846974c5737af282df5b565", "note": "Preparazione al passaggio alla nuova firma di sicurezza."}
+{"version": "2.0.0", "apk": "apk/DietDesk-2.0.0.apk", "sha256": "396b88d9cc431789cbe8a117090deb1fe0eba42b69b8ba50989c5323cd95892b", "reinstall": true, "note": "Nuova firma di sicurezza (va reinstallata una volta su Android), sostituzioni più veloci e conferma delle modifiche non salvate."}
