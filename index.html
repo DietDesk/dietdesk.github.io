@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-W3tw1wApCnKOdxQEfv9JkUgYi+C+76b8gcAMp+BMj8c=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-aoD6bCmsLzmvup6frMilI7siddR0p5yKKU/4Gp8u1xU=' 'sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=' 'sha256-e2a3NK71p+iPczD+I727mnbBLdMkl7Mpp3M8QcNCn/k=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://dietdesk.github.io https://www.googleapis.com https://accounts.google.com https://docs.google.com/forms/d/e/1FAIpQLScNPOM8KluMIwxcmStLXy-xMLeFcp85z8lSonEuywGtZdVCeA/formResponse; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>DietDesk</title>
 <meta name="theme-color" content="#1F5A45">
@@ -92,6 +92,10 @@ nav.tabs button[aria-current="true"]{color:var(--accent);font-weight:650}
 .grt-w{overflow-x:auto}.grt-p td,.grt-p th{text-align:center}.grt-p tbody th{text-align:left;font-weight:600;font-size:13px;white-space:nowrap}
 .subrow{grid-template-columns:minmax(0,1fr) auto 36px;align-items:start}.subrow select.smrow{margin-top:4px;font-size:13px;padding:4px 6px;height:auto;width:auto;max-width:100%}
 .subpick{max-height:38vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;padding:4px 10px}.subchk{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line);margin:0}.subchk:last-child{border-bottom:0}.subchk input{margin-top:3px;flex:none}
+.tag.rec{background:#fdf0d5;color:#8a5a00;border:0;font-size:11px;padding:1px 6px;border-radius:6px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.ctree{border:1px solid var(--line);border-radius:12px;margin:0 0 6px;overflow:hidden}.ctree>summary{list-style:none;cursor:pointer;padding:10px 12px;display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.ctree>summary::-webkit-details-marker{display:none}.ctree>summary:before{content:"▸";color:var(--ink-2);margin-right:6px;transition:transform .15s;display:inline-block}.ctree[open]>summary:before{transform:rotate(90deg)}
+.ctree>summary>span:first-child{flex:1}.ctree .cnt{color:var(--accent);font-weight:700;white-space:nowrap}.ctm{margin:0 8px 6px 18px;border-radius:10px}.ctm>summary{font-weight:500;padding:8px 10px}.ctf{padding:0 10px 4px 26px}
 .unsaved{position:absolute;inset:auto 0 0 0;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.15);padding:14px 16px calc(14px + env(safe-area-inset-bottom));border-radius:16px 16px 0 0;z-index:5}
 .bmiwrap{display:grid;gap:0 14px}@media(min-width:900px){.bmiwrap{grid-template-columns:1fr 1fr;align-items:start}}
 .bmibig{display:flex;align-items:baseline;gap:6px}.bmibig b{font-size:34px;line-height:1.1}.bmibig span{color:var(--ink-2);font-size:14px}
@@ -268,7 +272,7 @@ svg.chart text{fill:var(--ink-3);font-size:11px;font-family:var(--font)}
 .esclbar.bad{border-color:var(--warn)}.esclbar.bad b{color:var(--warn)}
 .pd-e{font-size:9pt;color:#a33;margin:-6px 0 8px}
 .pd-x{color:#C0392B;font-weight:600;font-style:normal}
-.pd-sn{color:#666;font-style:normal}
+.pd-sn{color:#666;font-style:normal}.pd-rec{font-style:italic;color:#8a5a00;font-size:.9em}
 .wk-t{flex:1;min-width:0;text-align:center;font-weight:650;font-size:15px;line-height:1.2}
 .wk-t small{display:block;font-weight:500;font-size:12px;color:var(--ink-3)}
 .dtab.wk td{white-space:normal;text-align:left;vertical-align:top;min-width:150px;font-size:12px}
@@ -1360,6 +1364,7 @@ const ingList=f=>{const h=(f.ing||[]).find(x=>/^Ingredienti/.test(x));
 const SUB_MODES=[["KCAL","Isocalorica"],["PROTEINE","Iso-proteica"],["GLUCIDI","Iso-glucidica"],["LIPIDI","Iso-lipidica"],["FIBRA","Iso-fibra"]];
 const subModeLabel=m=>(SUB_MODES.find(x=>x[0]===m)||SUB_MODES[0])[1];
 function eqGrams(f0,g0,f1,mode,st){st=st||state.kv.opt.subStep||5;if(mode==="PESO")return g0>0?Math.max(st,Math.round(g0/st)*st):null;const ref=val(f0,mode,g0),per=f1.v[CI[mode]]||0;if(!f0||!per||ref<=0)return null;return Math.max(st,Math.round(ref/per*100/st)*st)}
+const recTag=f=>f&&f.o==="r"?` <span class="tag rec">ricetta</span>`:"";
 /* ogni alternativa può avere la sua equivalenza (s.sm); altrimenti vale quella generale dell'alimento (x.sm) */
 function subsOf(x){const f0=food(x.n),st=x.ss||state.kv.opt.subStep||5;return(x.sost||[]).map(s=>{const f1=food(s.n),mode=s.sm||x.sm||"KCAL";return{n:s.n,f:f1,sm:s.sm||"",mode,g:!(f0&&f1)?null:s.r?Math.max(st,Math.round(s.r*x.g/st)*st):eqGrams(f0,x.g,f1,mode,x.ss)}})}
 const subsLine=x=>{const S=subsOf(x);return S.length?`<span class="subs">oppure ${S.map(s=>esc(s.n)+(s.g?" "+fmt(s.g)+"g":"")).join(" · ")}</span>`:""};
@@ -1370,7 +1375,9 @@ function suggestSubs(f0,g0,mode,exclude,x0st){
   const all=pool.map(f=>{const s=shares(f),d=Math.hypot(s[0]-s0[0],s[1]-s0[1],s[2]-s0[2]),g=eqGrams(f0,g0,f,mode,x0st);return{f,d,g,same:sc&&f.c===sc}})
     .filter(x=>x.g&&x.g<=g0*4+20&&x.g>=g0/4).sort((a,b)=>a.d-b.d);
   const same=all.filter(x=>x.same).slice(0,20),other=all.filter(x=>!x.same&&x.d<.15).slice(0,15);
-  return{same,other,n:same.length+other.length};
+  const rec=FOODS.filter(f=>f!==f0&&f.o==="r"&&!exclude.has(key(f.n))&&(mode==="PESO"||(f.v[CI[mode]]||0)>0)&&(f.v[CI.KCAL]||0)>0&&!conflicts(f).length)
+    .map(f=>{const s=shares(f);return{f,d:Math.hypot(s[0]-s0[0],s[1]-s0[1],s[2]-s0[2]),g:eqGrams(f0,g0,f,mode,x0st)}}).filter(x=>x.g&&x.g<=g0*6+50&&x.d<.25).sort((a,b)=>a.d-b.d).slice(0,12);
+  return{same,other,rec,n:same.length+other.length+rec.length};
 }
 function subsSheet(p,x,back){
   const f0=food(x.n);if(!f0)return;const pick=new Set();
@@ -1378,15 +1385,15 @@ function subsSheet(p,x,back){
     for(const k of [...pick])if(ex.has(k))pick.delete(k);
     const cmp=(f,g)=>[["KCAL","kcal",0],["PROTEINE","P",1],["LIPIDI","L",1],["GLUCIDI","G",1]].map(([c,l,d])=>`${l} ${fmt(val(f,c,g),d)}`).join(" · ");
     const rowMode=(z,i)=>`<select class="smrow" data-sm="${i}" aria-label="Equivalenza per ${esc(z.n)}"><option value=""${z.sm?"":" selected"}>Come generale</option>${ALT_MODES.map(([k,l])=>`<option value="${k}"${z.sm===k?" selected":""}>${l}</option>`).join("")}</select>`;
-    const sugg=[["Stessa categoria",sg.same],["Altri con profilo nutrizionale simile",sg.other]].filter(g=>g[1].length);
+    const sugg=[["Stessa categoria",sg.same],["Altri con profilo nutrizionale simile",sg.other],["Ricette",sg.rec]].filter(g=>g[1].length);
     s.querySelector("#sb").innerHTML=`<p class="note" style="margin-top:0">Riferimento: <b>${esc(x.n)} ${fmt(x.g)}g</b> · ${cmp(f0,x.g)}</p>
      ${GS.length?`<div class="field"><label for="sgrp">Alternative standard</label><select id="sgrp"><option value="">${x.grp?"In uso: "+esc((GS.find(g=>g.id===x.grp)||{nome:"gruppo"}).nome):"Applica un gruppo…"}</option>${GS.map(g=>`<option value="${g.id}">${esc(g.nome)} · ${g.items.length-1} alternative</option>`).join("")}</select><span class="hint">Sostituisce l'elenco qui sotto con le alternative del gruppo.</span></div>`:""}
      <div class="field"><label for="smode">Equivalenza generale</label><select id="smode">${ALT_MODES.map(([k,l])=>`<option value="${k}"${k===mode?" selected":""}>${l}</option>`).join("")}</select><span class="hint">Vale per le alternative impostate su "Come generale"; ogni riga può averne una sua. Le grammature si ricalcolano se cambi i grammi del riferimento.</span></div>
      <div class="head" style="margin:4px 0 2px"><div class="label" style="margin:0">Sostituzioni (${S.length})</div>${S.length?`<button type="button" class="btn small" id="scopy">Copia su altri alimenti…</button>`:""}</div>
-     ${S.map((z,i)=>`<div class="ingrow subrow"><span style="min-width:0;overflow-wrap:anywhere"><b>${esc(z.n)}</b>${z.f?warnTag(z.f):""}<br><span class="note" style="margin:0">${z.f&&z.g?cmp(z.f,z.g):z.f?`non calcolabile con l'equivalenza ${altModeLabel(z.mode).toLowerCase()}`:"non in archivio"}</span><br>${rowMode(z,i)}</span><b class="num">${z.g?fmt(z.g)+"g":"–"}</b><button class="iconbtn" data-sx="${i}" aria-label="Rimuovi ${esc(z.n)}" style="width:36px;height:36px">${I.x}</button></div>`).join("")||`<p class="note">Nessuna sostituzione.</p>`}
+     ${S.map((z,i)=>`<div class="ingrow subrow"><span style="min-width:0;overflow-wrap:anywhere"><b>${esc(z.n)}</b>${recTag(z.f)}${z.f?warnTag(z.f):""}<br><span class="note" style="margin:0">${z.f&&z.g?cmp(z.f,z.g):z.f?`non calcolabile con l'equivalenza ${altModeLabel(z.mode).toLowerCase()}`:"non in archivio"}</span><br>${rowMode(z,i)}</span><b class="num">${z.g?fmt(z.g)+"g":"–"}</b><button class="iconbtn" data-sx="${i}" aria-label="Rimuovi ${esc(z.n)}" style="width:36px;height:36px">${I.x}</button></div>`).join("")||`<p class="note">Nessuna sostituzione.</p>`}
      <div class="label" style="margin:14px 0 4px">Aggiungi dal database</div>
-     ${sugg.length?`<div class="subpick">${sugg.map(([l,L])=>`<div class="note" style="margin:6px 0 2px;font-weight:600">${l}</div>${L.map(z=>`<label class="pd-o subchk"><input type="checkbox" data-pk="${esc(key(z.f.n))}" data-pn="${esc(z.f.n)}"${pick.has(key(z.f.n))?" checked":""}><span><b>${esc(z.f.n)}</b>${warnTag(z.f)} <span class="num note" style="margin:0">${fmt(z.g)}g · ${fmt(val(z.f,"KCAL",z.g))}kcal</span></span></label>`).join("")}`).join("")}</div>`:`<p class="note">Nessun suggerimento con questa equivalenza.</p>`}
-     <div class="actions" style="flex-wrap:wrap;margin-top:8px"><button type="button" class="btn" id="ssrc">Cerca un altro alimento…</button><button type="button" class="btn primary" id="sadd"${pick.size?"":" disabled"}>Aggiungi le selezionate${pick.size?` (${pick.size})`:""}</button></div>`;
+     ${sugg.length?`<div class="subpick">${sugg.map(([l,L])=>`<div class="note" style="margin:6px 0 2px;font-weight:600">${l}</div>${L.map(z=>`<label class="pd-o subchk"><input type="checkbox" data-pk="${esc(key(z.f.n))}" data-pn="${esc(z.f.n)}"${pick.has(key(z.f.n))?" checked":""}><span><b>${esc(z.f.n)}</b>${recTag(z.f)}${warnTag(z.f)} <span class="num note" style="margin:0">${fmt(z.g)}g · ${fmt(val(z.f,"KCAL",z.g))}kcal</span></span></label>`).join("")}`).join("")}</div>`:`<p class="note">Nessun suggerimento con questa equivalenza.</p>`}
+     <div class="actions" style="flex-wrap:wrap;margin-top:8px"><button type="button" class="btn" id="ssrc">Cerca alimento o ricetta…</button><button type="button" class="btn primary" id="sadd"${pick.size?"":" disabled"}>Aggiungi le selezionate${pick.size?` (${pick.size})`:""}</button></div>`;
     s.querySelector("#smode").onchange=e=>{x.sm=e.target.value;delete x.grp;(x.sost||[]).forEach(z=>delete z.r);savePaz(p);draw(s)};
     const sg2=s.querySelector("#sgrp");if(sg2)sg2.onchange=e=>{const G=GS.find(g=>g.id===e.target.value);if(G){applyGroup(x,G);savePaz(p)}draw(s)};
     s.querySelectorAll("[data-sx]").forEach(b=>b.onclick=()=>{x.sost.splice(+b.dataset.sx,1);delete x.grp;savePaz(p);draw(s)});
@@ -1396,39 +1403,51 @@ function subsSheet(p,x,back){
     sa.onclick=()=>{if(!pick.size)return;x.sost=x.sost||[];let n=0;
       s.querySelectorAll("[data-pk]").forEach(c=>{if(!pick.has(c.dataset.pk))return;const f=food(c.dataset.pn);if(f&&!x.sost.some(z=>key(z.n)===key(f.n))){x.sost.push({n:f.n});n++}});
       pick.clear();delete x.grp;savePaz(p);draw(s);toast(n===1?"1 sostituzione aggiunta":n+" sostituzioni aggiunte")};
-    s.querySelector("#ssrc").onclick=()=>pickFoodInline(f=>{if(!f)return draw(s);if(key(f.n)===key(x.n))return toast("È lo stesso alimento");
+    s.querySelector("#ssrc").onclick=()=>pickFoodInline((f=>{if(!f)return draw(s);if(key(f.n)===key(x.n))return toast("È lo stesso alimento");
       if(mode!=="PESO"&&!(f.v[CI[mode]]>0))toast(`${f.n} non contiene ${lab(mode)[0].toLowerCase()}: imposta un'altra equivalenza per questa riga`);
-      x.sost=x.sost||[];if(!x.sost.some(z=>key(z.n)===key(f.n)))x.sost.push({n:f.n});delete x.grp;savePaz(p);draw(s)});
+      x.sost=x.sost||[];if(!x.sost.some(z=>key(z.n)===key(f.n)))x.sost.push({n:f.n});delete x.grp;savePaz(p);draw(s)}),{recipes:true});
     const cp=s.querySelector("#scopy");if(cp)cp.onclick=()=>copySubsSheet(p,x,()=>subsSheet(p,x,back))};
   sheet(`<h2>Sostituzioni</h2><div class="scroll" id="sb"></div><div class="actions" style="margin-top:10px"><button class="btn primary" id="sok">Fatto</button></div>`,s=>{draw(s);s.querySelector("#sok").onclick=()=>{closeSheet();back&&back()}},true);
 }
 /* copia delle sostituzioni di un alimento su altri alimenti della dieta (altri pasti o altri giorni) */
 function copySubsSheet(p,x,back){
-  const T=[];(p.giorni||[]).forEach((d,di)=>(d.pasti||[]).forEach(m=>(m.voci||[]).forEach(v=>{if(v!==x&&food(v.n))T.push({v,di,d,m})})));
-  if(!T.length)return toast("Non ci sono altri alimenti nella dieta");
-  const same=T.filter(t=>key(t.v.n)===key(x.n)),other=T.filter(t=>key(t.v.n)!==key(x.n)),sel=new Set();
-  const dl=t=>`Giorno ${t.di+1}${t.d.titolo?" · "+esc(t.d.titolo):""} · ${esc(t.m.nome)}`;
-  const row=(t,i)=>`<label class="pd-o subchk"><input type="checkbox" data-ct="${i}"><span><b>${esc(t.v.n)} ${fmt(t.v.g)}g</b><br><span class="note" style="margin:0">${dl(t)}${(t.v.sost||[]).length?` · ha già ${t.v.sost.length} sostituzioni`:""}</span></span></label>`;
-  const all=[...same,...other];
+  const all=[];(p.giorni||[]).forEach((d,di)=>(d.pasti||[]).forEach((m,mi)=>(m.voci||[]).forEach(v=>{if(v!==x&&food(v.n))all.push({v,di,d,mi,m})})));
+  if(!all.length)return toast("Non ci sono altri alimenti nella dieta");
+  const sel=new Set(),same=all.map((t,i)=>key(t.v.n)===key(x.n)?i:-1).filter(i=>i>=0);
+  const dl=t=>`Giorno ${t.di+1}${t.d.data?" · "+esc(t.d.data):""}${t.d.titolo?" · "+esc(t.d.titolo):""}`;
+  const chk=(i,lbl)=>{const t=all[i];return `<label class="pd-o subchk"><input type="checkbox" data-ct="${i}"><span><b>${esc(t.v.n)} ${fmt(t.v.g)}g</b>${recTag(food(t.v.n))}${lbl?`<br><span class="note" style="margin:0">${lbl}</span>`:""}${(t.v.sost||[]).length?`<br><span class="note" style="margin:0">ha già ${t.v.sost.length} sostituzioni</span>`:""}</span></label>`};
+  /* albero: giorno ▸ pasto ▸ alimento */
+  const days=[...new Set(all.map(t=>t.di))];
+  const tree=days.map(di=>{const T=all.map((t,i)=>[t,i]).filter(([t])=>t.di===di),meals=[...new Set(T.map(([t])=>t.mi))];
+    return `<details class="ctree" data-day="${di}"><summary><span>${dl(T[0][0])}</span><span class="cnt" data-cd="${di}"></span></summary>
+      ${meals.map(mi=>{const M=T.filter(([t])=>t.mi===mi);return `<details class="ctree ctm" data-meal="${di}-${mi}"><summary><span>${esc(M[0][0].m.nome)} <span class="note" style="margin:0">· ${M.length} ${M.length===1?"alimento":"alimenti"}</span></span><span class="cnt" data-cm="${di}-${mi}"></span></summary>
+        <div class="ctf">${M.map(([t,i])=>chk(i,"")).join("")}</div></details>`}).join("")}</details>`}).join("");
   sheet(`<h2>Copia le sostituzioni</h2><div class="scroll">
     <p class="note" style="margin-top:0">Da <b>${esc(x.n)} ${fmt(x.g)}g</b>: ${(x.sost||[]).length} alternative (${esc((x.sost||[]).map(z=>z.n).join(", "))}).</p>
     <div class="field"><label for="cpm">Equivalenza delle sostituzioni copiate</label><select id="cpm"><option value="">Come nell'originale (generale ${esc(altModeLabel(x.sm||"KCAL").toLowerCase())} e impostazioni per riga)</option>${ALT_MODES.map(([k,l])=>`<option value="${k}">${l} per tutte</option>`).join("")}</select></div>
     <div class="field"><label for="cpr">Se l'alimento ha già delle sostituzioni</label><select id="cpr"><option value="add">Aggiungi a quelle esistenti</option><option value="rep">Sostituiscile</option></select></div>
     <label class="pd-o" style="margin:0 0 10px"><input type="checkbox" id="cpx" checked> Aggiungi anche ${esc(x.n)} tra le alternative (se l'alimento di destinazione è diverso)</label>
-    ${same.length?`<div class="label" style="margin:6px 0 2px">Stesso alimento in altri pasti</div>${same.map((t,i)=>row(t,i)).join("")}`:""}
-    ${other.length?`<div class="label" style="margin:12px 0 2px">Altri alimenti</div>${other.map((t,i)=>row(t,i+same.length)).join("")}`:""}
+    ${same.length?`<div class="label" style="margin:6px 0 2px">Scorciatoia: stesso alimento in altri pasti</div>${same.map(i=>chk(i,dl(all[i])+" · "+esc(all[i].m.nome))).join("")}`:""}
+    <div class="label" style="margin:14px 0 4px">Scegli giorno ▸ pasto ▸ alimento</div>${tree}
     </div><div class="actions" style="margin-top:10px"><button type="button" class="btn" id="cpb">Indietro</button><button type="button" class="btn primary" id="cpok" disabled>Copia</button></div>`,sh=>{
-    const ok=sh.querySelector("#cpok"),upd=()=>{ok.disabled=!sel.size;ok.textContent=sel.size?`Copia su ${sel.size} ${sel.size===1?"alimento":"alimenti"}`:"Copia"};
-    sh.querySelectorAll("[data-ct]").forEach(c=>c.onchange=()=>{c.checked?sel.add(+c.dataset.ct):sel.delete(+c.dataset.ct);upd()});
+    const ok=sh.querySelector("#cpok");
+    const upd=()=>{ok.disabled=!sel.size;ok.textContent=sel.size?`Copia su ${sel.size} ${sel.size===1?"alimento":"alimenti"}`:"Copia";
+      sh.querySelectorAll("[data-cd]").forEach(e=>{const n=[...sel].filter(i=>all[i].di===+e.dataset.cd).length;e.textContent=n?n+" ✓":""});
+      sh.querySelectorAll("[data-cm]").forEach(e=>{const [di,mi]=e.dataset.cm.split("-").map(Number);const n=[...sel].filter(i=>all[i].di===di&&all[i].mi===mi).length;e.textContent=n?n+" ✓":""})};
+    sh.addEventListener("change",e=>{const c=e.target.closest("[data-ct]");if(!c)return;const i=+c.dataset.ct;c.checked?sel.add(i):sel.delete(i);
+      sh.querySelectorAll(`[data-ct="${i}"]`).forEach(o=>{o.checked=c.checked});upd()});
+    /* un giorno o un pasto aperto alla volta: si scende per gradi */
+    sh.querySelectorAll("details.ctree").forEach(d=>d.addEventListener("toggle",()=>{if(!d.open)return;const sib=d.parentElement.querySelectorAll(":scope > details.ctree");sib.forEach(o=>{if(o!==d)o.open=false})}));
     sh.querySelector("#cpb").onclick=()=>{closeSheet();back()};
     ok.onclick=()=>{const md=sh.querySelector("#cpm").value,repl=sh.querySelector("#cpr").value==="rep",incl=sh.querySelector("#cpx").checked;let n=0,skip=0;
-      for(const i of sel){const t=all[i],v=t.v,same=key(v.n)===key(x.n);
-        let L=(x.sost||[]).filter(z=>key(z.n)!==key(v.n)).map(z=>{const o={n:z.n};if(!md&&z.sm)o.sm=z.sm;if(!md&&same&&z.r)o.r=z.r;return o});
-        if(incl&&!same)L.unshift(md?{n:x.n}:{n:x.n});
+      for(const i of sel){const t=all[i],v=t.v,sameF=key(v.n)===key(x.n);
+        let L=(x.sost||[]).filter(z=>key(z.n)!==key(v.n)).map(z=>{const o={n:z.n};if(!md&&z.sm)o.sm=z.sm;if(!md&&sameF&&z.r)o.r=z.r;return o});
+        if(incl&&!sameF)L.unshift({n:x.n});
         if(repl){v.sost=L}else{v.sost=v.sost||[];for(const z of L)if(!v.sost.some(y=>key(y.n)===key(z.n)))v.sost.push(z)}
         v.sm=md||x.sm||"KCAL";if(md)v.sost.forEach(z=>{delete z.sm;delete z.r});delete v.grp;n++;
         skip+=subsOf(v).filter(z=>z.f&&!z.g).length}
-      savePaz(p);closeSheet();toast(`Sostituzioni copiate su ${n} ${n===1?"alimento":"alimenti"}`+(skip?` · ${skip} non calcolabili con l'equivalenza scelta`:""));back()}},true)}
+      savePaz(p);closeSheet();toast(`Sostituzioni copiate su ${n} ${n===1?"alimento":"alimenti"}`+(skip?` · ${skip} non calcolabili con l'equivalenza scelta`:""));back()};
+    const d0=sh.querySelector("details.ctree");if(d0&&days.length===1)d0.open=true},true)}
 
 /* ═════════ esclusioni alimentari del paziente ═════════ */
 /* Allergie, intolleranze e scelte alimentari. Il riconoscimento è automatico (categoria, nome, ingredienti delle ricette,
@@ -2286,7 +2305,7 @@ const half=n=>{const w=Math.floor(n),h=n-w>=.5;return(w?String(w):"")+(h?"½":""
 function qtyText(n,g,casa){const nm=printName(n);
   if(casa){const k=key(n),h=HOUSE.find(x=>x[0].test(k));if(h){const q=Math.max(.5,Math.round(g/h[3]*2)/2);return `${half(q)} ${q>1?h[2]:h[1]} di ${nm}`}}
   return `${fmt(g)}g ${nm}`}
-function altText(x,casa){return subsOf(x).filter(z=>z.g&&!(z.f&&conflicts(z.f).length)).map(z=>esc(qtyText(z.n,z.g,casa))+printFlags(z.f))}
+function altText(x,casa){return subsOf(x).filter(z=>z.g&&!(z.f&&conflicts(z.f).length)).map(z=>esc(qtyText(z.n,z.g,casa))+(z.f&&z.f.o==="r"?` <span class="pd-rec">(ricetta)</span>`:"")+printFlags(z.f))}
 const PDOW=d=>{const p=String(d).split("/");const t=new Date(+p[2],+p[1]-1,+p[0]);return isNaN(t)?d:WD[t.getDay()]+" "+p[0]+"/"+p[1]};
 function mealOrder(p,days){const o=[];for(const d of days){sortPasti(d,p);for(const m of d.pasti)if(m.voci.some(x=>x.g>0)&&!o.includes(m.nome))o.push(m.nome)}
   const ref=MEAL_NAMES;return o.sort((a,b)=>{const ia=ref.indexOf(a),ib=ref.indexOf(b);return(ia<0?50+o.indexOf(a):ia)-(ib<0?50+o.indexOf(b):ib)})}
@@ -2543,11 +2562,11 @@ function editRecipe(r){
      closeSheet();rerender();toast("Ricetta salvata")};
   },true);
 }
-function pickFoodInline(cb){
+function pickFoodInline(cb,opt){opt=opt||{};
   const s=document.createElement("div");s.className="scrim";s.style.zIndex=30;
-  s.innerHTML=`<div class="sheet full" role="dialog" aria-modal="true"><div class="grabzone" aria-hidden="true"><div class="grab"></div></div><button type="button" class="sheetx" aria-label="Chiudi">${I.x}</button><h2>Ingrediente</h2><div class="search">${I.search}<input id="qi" type="search" placeholder="Cerca ingrediente" autocomplete="off"></div><div class="scroll"><div class="list" id="il"></div></div><div class="actions" style="margin-top:10px"><button class="btn" id="ic">Annulla</button></div></div>`;
+  s.innerHTML=`<div class="sheet full" role="dialog" aria-modal="true"><div class="grabzone" aria-hidden="true"><div class="grab"></div></div><button type="button" class="sheetx" aria-label="Chiudi">${I.x}</button><h2>${opt.recipes?"Alternativa":"Ingrediente"}</h2><div class="search">${I.search}<input id="qi" type="search" placeholder="${opt.recipes?"Cerca alimento o ricetta":"Cerca ingrediente"}" autocomplete="off"></div><div class="scroll"><div class="list" id="il"></div></div><div class="actions" style="margin-top:10px"><button class="btn" id="ic">Annulla</button></div></div>`;
   document.body.appendChild(s);const q=s.querySelector("#qi");
-  const draw=()=>{s.querySelector("#il").innerHTML=searchFoods(q.value,"tutti").filter(f=>f.o!=="r").map(foodRow).join("")};draw();q.oninput=draw;
+  const draw=()=>{s.querySelector("#il").innerHTML=searchFoods(q.value,"tutti").filter(f=>opt.recipes||f.o!=="r").map(foodRow).join("")};draw();q.oninput=draw;
   const done=f=>{s.remove();cb(f)};
   s.querySelector("#ic").onclick=()=>done(null);s.onclick=e=>{if(e.target===s)done(null)};
   s.querySelector("#il").onclick=e=>{const b=e.target.closest("[data-n]");if(b)done(food(b.dataset.n))};
@@ -3388,7 +3407,7 @@ async function nativeOpen(url){try{const FS=window.Capacitor.Plugins.Filesystem;
 
 /* ═════════ aggiornamenti dell'app Android (Dati → Aggiornamenti) ═════════ */
 const UPD_URL="https://dietdesk.github.io/version.json";
-const APP_VER="2.0.0"; /* versione di questa build (la stessa dell'APK che la contiene) */
+const APP_VER="2.0.1"; /* versione di questa build (la stessa dell'APK che la contiene) */
 const UPD={info:null,latest:null,err:""};
 const updPlug=()=>{const C=window.Capacitor;if(!isNative())return null;return C.Plugins&&C.Plugins.NDUpdate||(C.registerPlugin?C.registerPlugin("NDUpdate"):null)};
 const vcmp=(a,b)=>{const A=String(a).split(".").map(Number),B=String(b).split(".").map(Number);for(let i=0;i<3;i++){const d=(A[i]||0)-(B[i]||0);if(d)return d}return 0};
@@ -3414,7 +3433,8 @@ function updBrowser(){const L=UPD.latest;if(!L)return;const u=new URL(L.apk,UPD_
   if(u.origin!=="https://dietdesk.github.io"||!/^\/apk\/DietDesk-\d+\.\d+\.\d+\.apk$/.test(u.pathname))return toast("Indirizzo dell'aggiornamento non valido");location.href=u.href}
 /* versione firmata con una chiave nuova: Android non la installa sopra quella attuale, va reinstallata.
    I dati non passano da soli: prima si salvano (Drive o backup), poi si disinstalla e si installa la nuova. */
-const updReinstall=()=>!!(UPD.latest&&UPD.latest.reinstall===true&&updNew());
+/* reinstallBelow: la reinstallazione serve solo a chi ha una versione più vecchia (firmata con la chiave precedente) */
+const updReinstall=()=>{const L=UPD.latest;if(!L||L.reinstall!==true||!updNew())return false;return !L.reinstallBelow||vcmp(APP_VER,L.reinstallBelow)<0};
 function updReinstallHTML(){const L=UPD.latest,dr=syncOn()&&isDrive();
   return `<div class="card" style="border:2px solid var(--accent)"><h3>DietDesk ${esc(L.version)}: va reinstallata</h3>
    <p style="margin-top:0">Questa versione ha una nuova firma di sicurezza: Android non la installa sopra quella attuale. <b>I dati non passano da soli</b>, quindi segui i passaggi in quest'ordine.</p>
@@ -3444,7 +3464,7 @@ const updDayGet=()=>{try{return localStorage.getItem(UPD_DAY_KEY)||""}catch(e){r
 const updDaySet=()=>{try{localStorage.setItem(UPD_DAY_KEY,new Date().toDateString())}catch(e){}};
 function updBalloon(){const L=UPD.latest;if(!L||!updNew()||updDayGet()===new Date().toDateString()||document.querySelector(".upd-ball"))return;
   updDaySet();const b=document.createElement("div");b.className="upd-ball";b.setAttribute("role","status");
-  b.innerHTML=`<div><b>È disponibile DietDesk ${esc(String(L.version))}</b>${L.reinstall===true&&isNative()?`<span>Questa versione va reinstallata: tocca Aggiorna e segui i passaggi, prima di disinstallare.</span>`:L.note?`<span>${esc(String(L.note).slice(0,200))}</span>`:""}</div>
+  b.innerHTML=`<div><b>È disponibile DietDesk ${esc(String(L.version))}</b>${updReinstall()&&isNative()?`<span>Questa versione va reinstallata: tocca Aggiorna e segui i passaggi, prima di disinstallare.</span>`:L.note?`<span>${esc(String(L.note).slice(0,200))}</span>`:""}</div>
     <div class="upd-ball-a"><button type="button" class="btn" data-x>Più tardi</button><button type="button" class="btn primary" data-go>Aggiorna</button></div>`;
   const close=()=>{b.classList.remove("on");setTimeout(()=>b.remove(),250)};
   b.querySelector("[data-x]").onclick=close;
