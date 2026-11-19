@@ -1,1 +1,1 @@
-{"version": "2.1.5", "apk": "apk/DietDesk-2.1.5.apk", "sha256": "4e992a38cf03f36aaea1b4a883625bf0a8492dc7d2093009b871a517a97f71af", "reinstall": true, "reinstallBelow": "2.0.0", "note": "Finestre più fluide con lo stile vetro; corretto il lampo alla chiusura delle finestre."}
+{"version": "2.1.6", "apk": "apk/DietDesk-2.1.6.apk", "sha256": "46801211d65405ee7c1fab94938ded937f60134c45795a51b50eef6750360f7d", "reinstall": true, "reinstallBelow": "2.0.0", "note": "Barra delle sezioni stabile in ogni sezione; angoli della pagina morbidi alla chiusura delle finestre."}
