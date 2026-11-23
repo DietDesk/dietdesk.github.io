@@ -1,1 +1,1 @@
-{"version": "2.1.14", "apk": "apk/DietDesk-2.1.14.apk", "sha256": "33697aa68f1e9c86d7f3e3cfd63bdf24f7c538ca94620a5eda962f6b1543916a", "reinstall": true, "reinstallBelow": "2.0.0", "note": "Copia e incolla dei pasti con le sostituzioni, anche tra pazienti diversi."}
+{"version": "2.1.15", "apk": "apk/DietDesk-2.1.15.apk", "sha256": "84da0c8d1d19419f27b32a3994f0ff06ffe99dfa4e69301213649c29ac28eace", "reinstall": true, "reinstallBelow": "2.0.0", "note": "Ordinamento dei pazienti (cognome, kcal, proteine, età, ultima visita…) e degli alimenti (nome o qualsiasi nutriente)."}
