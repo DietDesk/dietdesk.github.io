@@ -1,1 +1,1 @@
-{"version": "2.1.16", "apk": "apk/DietDesk-2.1.16.apk", "sha256": "f6af18212786a0ec04dbe8a180d6e979cf4eb14e60af4e67ab65168f2b7dab29", "reinstall": true, "reinstallBelow": "2.0.0", "note": "Pazienti mostrati come Cognome Nome, con Cognome e Nome in caselle separate; testo delle finestre di nuovo nitido su PC."}
+{"version": "2.2.0", "apk": "apk/DietDesk-2.2.0.apk", "sha256": "0e8af52b78b3c665812600ed0a931b17fbe7cfbea065f839e92f1ed83cf22146", "reinstall": true, "reinstallBelow": "2.0.0", "note": "BIVA: grafico R-Xc nella scheda Paziente e BIVA rapida in Calcoli"}
