@@ -1,1 +1,1 @@
-{"version": "2.2.0", "apk": "apk/DietDesk-2.2.0.apk", "sha256": "0e8af52b78b3c665812600ed0a931b17fbe7cfbea065f839e92f1ed83cf22146", "reinstall": true, "reinstallBelow": "2.0.0", "note": "BIVA: grafico R-Xc nella scheda Paziente e BIVA rapida in Calcoli"}
+{"version": "2.2.1", "apk": "apk/DietDesk-2.2.1.apk", "sha256": "56090d68dd59ff009284da3b019070aeb7891e6ec88c625a102e5eb9be692fbb", "reinstall": true, "reinstallBelow": "2.0.0", "note": "Metabolismo basale: età e statura della stessa visita del peso, Mifflin-St Jeor con BMI ≥30, domanda sulla statura con un peso nuovo"}
